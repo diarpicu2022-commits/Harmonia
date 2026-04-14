@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import * as musicMetadata from 'music-metadata';
+import { parseFile } from 'music-metadata';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { authMiddleware } from '../middleware/auth';
@@ -68,7 +68,7 @@ router.post('/audio', authMiddleware, upload.single('audio'), async (req: Reques
 
   try {
     const filePath = req.file.path;
-    const meta = await musicMetadata.parseFile(filePath);
+    const meta = await parseFile(filePath);
     const common = meta.common;
     const format = meta.format;
 
