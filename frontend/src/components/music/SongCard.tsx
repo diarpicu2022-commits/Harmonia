@@ -13,6 +13,7 @@ interface Props {
   song: Song;
   index: number;
   onPlay?: () => void;
+  onAddToQueue?: () => void;
 }
 
 export default function SongCard({ song, index, onPlay }: Props) {

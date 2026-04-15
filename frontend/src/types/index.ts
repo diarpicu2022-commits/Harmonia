@@ -25,6 +25,7 @@ export interface Song {
 }
 
 export interface Playlist {
+  _id?: string;
   id: string;
   name: string;
   description?: string;
