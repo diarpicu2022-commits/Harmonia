@@ -41,6 +41,8 @@ const allowedOrigins = [
   'https://harmonia-git-main-diarpicu2022-commits-projects.vercel.app',
   'https://harmonia-okm9f25l3-diarpicu2022-commits-projects.vercel.app',
   'https://harmonia-42u3kfti9-diarpicu2022-commits-projects.vercel.app',
+  'https://harmonia-frontend-chi.vercel.app',
+  'https://harmonia-iuq94e0ib-diarpicu2022-commits-projects.vercel.app',
 ];
 
 app.use(cors({
