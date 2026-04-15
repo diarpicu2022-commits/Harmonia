@@ -37,22 +37,22 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
   };
 
   const handleMenuClick = (e: React.MouseEvent) => {
-    console.log('Menu clicked');
     e.stopPropagation();
+    alert('Botón funcionando!');
     setShowMenu(!showMenu);
   };
 
   const handleAddToQueueStart = (e: React.MouseEvent) => {
-    console.log('Add to start clicked');
     e.stopPropagation();
+    alert('Agregar al inicio funcionando!');
     addToQueue(song, 'start');
     toast.success('Agregada al inicio de la cola');
     setShowMenu(false);
   };
 
   const handleAddToQueueEnd = (e: React.MouseEvent) => {
-    console.log('Add to end clicked');
     e.stopPropagation();
+    alert('Agregar al final funcionando!');
     addToQueue(song, 'end');
     toast.success('Agregada al final de la cola');
     setShowMenu(false);
