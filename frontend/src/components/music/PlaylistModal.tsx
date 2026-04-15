@@ -44,7 +44,7 @@ export default function PlaylistModal({ song, isOpen, onClose }: Props) {
     setLoading(true);
     try {
       const pl = playlists.find(p => p._id === playlistId);
-      const currentSongs = pl?.songs?.map((s: any) => s._id || s.id).filter(Boolean) || [];
+      const currentSongs = pl?.songs || [];
       const songId = song.id.replace(/^(sp_|yt_|dz_)/, '');
       await playlistAPI.updateSongs(playlistId, [...currentSongs, songId]);
       toast.success('Canción agregada a playlist');

@@ -105,7 +105,7 @@ export interface IPlaylist extends Document {
   description?: string;
   coverArt?: string;
   owner: Types.ObjectId;
-  songs: Types.ObjectId[];
+  songs: string[];
   isPublic: boolean;
   mood?: string;
   totalDuration: number;
@@ -117,7 +117,7 @@ const PlaylistSchema = new Schema<IPlaylist>({
   description: { type: String },
   coverArt: { type: String },
   owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  songs: [{ type: Schema.Types.ObjectId, ref: 'Song' }],
+  songs: [{ type: String }],  // Store as strings to support external IDs
   isPublic: { type: Boolean, default: false },
   mood: { type: String },
   totalDuration: { type: Number, default: 0 },
