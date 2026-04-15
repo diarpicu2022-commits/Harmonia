@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Song, User, MoodType, PlayerState, ChatMessage, Playlist } from '../types';
 import { DoublyLinkedListClient } from '../utils/DoublyLinkedListClient';
+import { userAPI } from '../services/api';
 
 // ─── Auth Store ───────────────────────────────────────────────────────────────
 
@@ -58,6 +59,7 @@ export const useMoodStore = create<MoodStore>()((set) => ({
     document.documentElement.setAttribute('data-mood', mood);
     document.documentElement.style.setProperty('--mood-primary', color);
     set({ mood, themeColor: color, energyLevel: energy ?? 5 });
+    userAPI.updatePreferences({ mood, themeColor: color }).catch(() => {});
   },
 }));
 
@@ -107,12 +109,14 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
     loadQueue: (songs, startIndex = 0) => {
       playlist.fromArray(songs);
       playlist.setCurrent(startIndex);
+      const song = songs[startIndex] || null;
       set({
         currentQueue: songs,
-        currentSong: songs[startIndex] || null,
+        currentSong: song,
         currentIndex: startIndex,
         isPlaying: true,
       });
+      if (song) userAPI.trackHistory(song.id, 0).catch(() => {});
     },
 
     play: (song) => {
@@ -121,6 +125,7 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
         if (idx >= 0) {
           playlist.setCurrent(idx);
           set({ currentSong: song, currentIndex: idx, isPlaying: true, progress: 0 });
+          userAPI.trackHistory(song.id, 0).catch(() => {});
         }
       } else {
         set({ isPlaying: true });
@@ -142,11 +147,13 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
         const song = currentQueue[idx];
         playlist.setCurrent(idx);
         set({ currentSong: song, currentIndex: idx, progress: 0, isPlaying: true });
+        if (song) userAPI.trackHistory(song.id, 0).catch(() => {});
         return song;
       }
       const next = playlist.next(repeatMode === 'all');
       if (next) {
         set({ currentSong: next, currentIndex: playlist.getCurrentIndex(), progress: 0, isPlaying: true });
+        userAPI.trackHistory(next.id, 0).catch(() => {});
       } else {
         set({ isPlaying: false });
       }
