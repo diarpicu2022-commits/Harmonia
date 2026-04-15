@@ -33,7 +33,7 @@ export default function LyricsPanel() {
   }, [currentSong?.id]);
 
   const activeIndex = syncedLyrics
-    ? syncedLyrics.findLastIndex(l => l.time <= currentTime)
+    ? syncedLyrics.findLastIndex((l: { time: number; text: string }) => l.time <= currentTime)
     : -1;
 
   return (

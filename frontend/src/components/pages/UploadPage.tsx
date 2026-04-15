@@ -1,13 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Music2, CheckCircle2, XCircle, Loader2, FileAudio } from 'lucide-react';
+import { Upload, CheckCircle2, XCircle, Loader2, FileAudio } from 'lucide-react';
 import { uploadAPI } from '../../services/api';
 import type { UploadProgress } from '../../types';
 
-const formatBytes = (b: number) => b < 1024 * 1024
-  ? `${(b / 1024).toFixed(0)} KB`
-  : `${(b / (1024 * 1024)).toFixed(1)} MB`;
+const formatBytes = (b: number) =>
+  b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / (1024 * 1024)).toFixed(1)} MB`;
 
 export default function UploadPage() {
   const [uploads, setUploads] = useState<UploadProgress[]>([]);
@@ -22,8 +21,11 @@ export default function UploadPage() {
         updateUpload(file, { progress: pct, status: pct < 100 ? 'uploading' : 'processing' })
       );
       updateUpload(file, { status: 'done', song: data.song, progress: 100 });
-    } catch (err: any) {
-      updateUpload(file, { status: 'error', error: err.response?.data?.error || 'Error al subir' });
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+        : undefined;
+      updateUpload(file, { status: 'error', error: msg || 'Error al subir' });
     }
   };
 
@@ -56,17 +58,14 @@ export default function UploadPage() {
       </motion.div>
 
       {/* Drop zone */}
-      <motion.div
+      <div
         {...getRootProps()}
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ scale: 1.005 }}
-        transition={{ duration: 0.3 }}
-        className="relative rounded-3xl p-16 text-center cursor-pointer transition-all mb-8 overflow-hidden"
+        className="relative rounded-3xl p-16 text-center cursor-pointer mb-8 overflow-hidden"
         style={{
           border: `2px dashed ${isDragActive ? 'var(--mood-primary)' : 'rgba(255,255,255,0.1)'}`,
           background: isDragActive ? 'var(--mood-surface)' : 'rgba(255,255,255,0.02)',
           boxShadow: isDragActive ? '0 0 0 4px var(--mood-glow)' : 'none',
+          transition: 'all 0.2s ease',
         }}
       >
         <input {...getInputProps()} />
@@ -74,14 +73,12 @@ export default function UploadPage() {
         {/* Decorative rings */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {[1, 2, 3].map(i => (
-            <motion.div key={i}
+            <motion.div
+              key={i}
               animate={isDragActive ? { scale: [1, 1.05, 1], opacity: [0.1, 0.2, 0.1] } : {}}
               transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
               className="absolute rounded-full border"
-              style={{
-                width: `${i * 120}px`, height: `${i * 120}px`,
-                borderColor: 'var(--mood-primary)', opacity: 0.08,
-              }}
+              style={{ width: `${i * 120}px`, height: `${i * 120}px`, borderColor: 'var(--mood-primary)', opacity: 0.08 }}
             />
           ))}
         </div>
@@ -100,17 +97,15 @@ export default function UploadPage() {
           <p className="text-white/40 text-sm mb-4">o haz clic para seleccionar archivos</p>
           <p className="text-white/20 text-xs">MP3 · WAV · FLAC · AAC · OGG · M4A · Máx. 50MB por archivo</p>
         </motion.div>
-      </motion.div>
+      </div>
 
       {/* Upload list */}
       <AnimatePresence>
         {uploads.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="space-y-3">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
             <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">
               Subiendo {uploads.length} {uploads.length === 1 ? 'archivo' : 'archivos'}
             </h3>
-
             {uploads.map((u, i) => (
               <motion.div
                 key={i}
@@ -120,7 +115,6 @@ export default function UploadPage() {
                 className="glass rounded-2xl p-4"
               >
                 <div className="flex items-center gap-4">
-                  {/* Cover or icon */}
                   <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0"
                     style={{ background: 'rgba(255,255,255,0.06)' }}>
                     {u.song?.coverArt
@@ -130,7 +124,6 @@ export default function UploadPage() {
                         </div>
                     }
                   </div>
-
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <p className="text-sm font-medium text-white/85 truncate">
@@ -139,13 +132,8 @@ export default function UploadPage() {
                       <StatusIcon status={u.status} />
                     </div>
                     <p className="text-xs text-white/40 truncate mb-2">
-                      {u.song
-                        ? `${u.song.artist} · ${u.song.album}`
-                        : formatBytes(u.file.size)
-                      }
+                      {u.song ? `${u.song.artist} · ${u.song.album}` : formatBytes(u.file.size)}
                     </p>
-
-                    {/* Progress bar */}
                     {u.status !== 'done' && u.status !== 'error' && (
                       <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
                         <motion.div
@@ -156,15 +144,11 @@ export default function UploadPage() {
                         />
                       </div>
                     )}
-
                     {u.status === 'done' && (
                       <p className="text-xs" style={{ color: '#10B981' }}>
-                        ✓ Subida correctamente
-                        {u.song?.coverArt ? ' · Carátula encontrada' : ''}
-                        {u.song?.genre ? ` · ${u.song.genre}` : ''}
+                        ✓ Subida correctamente{u.song?.coverArt ? ' · Carátula encontrada' : ''}
                       </p>
                     )}
-
                     {u.status === 'error' && (
                       <p className="text-xs" style={{ color: '#EF4444' }}>{u.error}</p>
                     )}

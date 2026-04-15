@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Youtube, Music2 } from 'lucide-react';
+import { Search, Music2 } from 'lucide-react';
 import { searchAPI } from '../../services/api';
 import { usePlayerStore } from '../../store';
 import type { SearchResults, SearchResult, Song } from '../../types';
@@ -12,6 +12,9 @@ const SOURCE_LABELS: Record<string, { label: string; color: string }> = {
   deezer: { label: 'Deezer', color: '#EF5466' },
 };
 
+const SOURCES = ['youtube', 'spotify', 'deezer'] as const;
+type SourceKey = typeof SOURCES[number];
+
 const toSong = (r: SearchResult): Song => ({
   id: r.id, title: r.title, artist: r.artist, album: r.album || '',
   duration: r.duration, coverArt: r.coverArt, youtubeId: r.youtubeId,
@@ -22,7 +25,7 @@ export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'youtube' | 'spotify' | 'deezer'>('youtube');
+  const [activeTab, setActiveTab] = useState<SourceKey>('youtube');
   const { loadQueue, addToQueue } = usePlayerStore();
 
   const handleSearch = useCallback(async (e?: React.FormEvent) => {
@@ -32,18 +35,19 @@ export default function SearchPage() {
     try {
       const { data } = await searchAPI.searchAll(query);
       setResults(data);
-      // default to source with most results
-      const maxSource = (['youtube', 'spotify', 'deezer'] as const)
-        .sort((a, b) => (data[b]?.length || 0) - (data[a]?.length || 0))[0];
-      setActiveTab(maxSource);
+      // Pick source with most results
+      const best = SOURCES.slice().sort(
+        (a, b) => (data[b]?.length ?? 0) - (data[a]?.length ?? 0)
+      )[0];
+      setActiveTab(best);
     } catch {
-      /* handle error */
+      // handle silently
     } finally {
       setLoading(false);
     }
   }, [query, loading]);
 
-  const activeResults = results?.[activeTab] || [];
+  const activeResults: SearchResult[] = results?.[activeTab] ?? [];
   const activeSongs = activeResults.map(toSong);
 
   return (
@@ -68,11 +72,17 @@ export default function SearchPage() {
               border: '1px solid rgba(255,255,255,0.08)',
               fontFamily: "'Plus Jakarta Sans',sans-serif",
             }}
-            onFocus={e => { e.currentTarget.style.borderColor = 'var(--mood-primary)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--mood-glow)'; }}
-            onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; }}
+            onFocus={e => {
+              e.currentTarget.style.borderColor = 'var(--mood-primary)';
+              e.currentTarget.style.boxShadow = '0 0 0 3px var(--mood-glow)';
+            }}
+            onBlur={e => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
           <button type="submit" disabled={loading}
-            className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2 rounded-xl text-sm font-medium btn-mood transition-all disabled:opacity-50">
+            className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2 rounded-xl text-sm font-medium btn-mood disabled:opacity-50">
             {loading ? '...' : 'Buscar'}
           </button>
         </div>
@@ -81,8 +91,8 @@ export default function SearchPage() {
       {/* Source tabs */}
       {results && (
         <div className="flex gap-2 mb-6">
-          {(['youtube', 'spotify', 'deezer'] as const).map(source => {
-            const count = results[source]?.length || 0;
+          {SOURCES.map(source => {
+            const count = results[source]?.length ?? 0;
             const { label, color } = SOURCE_LABELS[source];
             const isActive = activeTab === source;
             return (
@@ -109,33 +119,29 @@ export default function SearchPage() {
           <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />
+              <div key={i} className="h-16 rounded-xl animate-pulse"
+                style={{ background: 'rgba(255,255,255,0.04)' }} />
             ))}
           </motion.div>
         )}
-
         {!loading && activeResults.length > 0 && (
           <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="space-y-1">
             {activeSongs.map((song, i) => (
-              <SongCard
-                key={song.id}
-                song={song}
-                index={i}
+              <SongCard key={song.id} song={song} index={i}
                 onPlay={() => loadQueue(activeSongs, i)}
-                onAddToQueue={() => addToQueue(song, 'end')}
-              />
+                onAddToQueue={() => addToQueue(song, 'end')} />
             ))}
           </motion.div>
         )}
-
         {!loading && results && activeResults.length === 0 && (
           <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="text-center mt-16">
-            <p className="text-white/25 text-sm">No se encontraron resultados en {SOURCE_LABELS[activeTab].label}</p>
+            <p className="text-white/25 text-sm">
+              No se encontraron resultados en {SOURCE_LABELS[activeTab].label}
+            </p>
           </motion.div>
         )}
-
         {!loading && !results && (
           <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="text-center mt-20">

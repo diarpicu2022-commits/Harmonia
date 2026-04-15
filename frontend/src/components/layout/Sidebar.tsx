@@ -129,7 +129,7 @@ export default function Sidebar() {
       <div className="p-4 border-t border-white/5">
         <div className="flex items-center gap-3">
           {user?.avatar
-            ? <img src={user.avatar} alt="" className="w-9 h-9 rounded-full object-cover ring-2" style={{ ringColor: 'var(--mood-primary)' }} />
+            ? <img src={user.avatar} alt="" className="w-9 h-9 rounded-full object-cover" style={{ outline: "2px solid var(--mood-primary)", outlineOffset: "1px" }} />
             : <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
                 style={{ background: 'var(--mood-primary)', color: 'white' }}>
                 {user?.displayName?.[0]?.toUpperCase()}
