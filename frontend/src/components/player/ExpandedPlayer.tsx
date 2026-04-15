@@ -1,15 +1,33 @@
+import { useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2, Rewind, FastForward } from 'lucide-react';
 import { usePlayerStore } from '../../store';
+import { useAudioEngine } from '../../hooks/useAudioEngine';
 
 export default function ExpandedPlayer() {
-  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue } = usePlayerStore();
+  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics } = usePlayerStore();
+  const { seekTo } = useAudioEngine();
 
   const formatTime = (s: number) => {
     if (!s) return '0:00';
     const mins = Math.floor(s / 60);
     const secs = Math.floor(s % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    seekTo((e.clientX - rect.left) / rect.width);
+  }, [seekTo]);
+
+  const handlePrev10s = () => {
+    if (progress > 10) seekTo(progress - 10);
+    else seekTo(0);
+  };
+
+  const handleNext30s = () => {
+    if (progress < duration - 30) seekTo(progress + 30);
+    else seekTo(duration);
   };
 
   if (!currentSong) {
@@ -60,9 +78,11 @@ export default function ExpandedPlayer() {
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
           className="w-full mb-8">
-          <div className="relative h-2 bg-white/10 rounded-full mb-3">
+          <div className="relative h-2 bg-white/10 rounded-full mb-3 cursor-pointer group" onClick={handleSeek}>
             <motion.div className="absolute h-full rounded-full"
               style={{ width: `${(progress / (duration || 1)) * 100}%`, background: 'var(--mood-primary)' }} />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
+              style={{ boxShadow: '0 0 8px var(--mood-glow)' }} />
           </div>
           <div className="flex justify-between text-sm text-white/40">
             <span>{formatTime(progress * (duration || 0))}</span>
@@ -97,13 +117,13 @@ export default function ExpandedPlayer() {
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
           className="flex items-center justify-center gap-4 text-white/40">
-          <button className="p-2 hover:text-white transition-colors">
+          <button className="p-2 hover:text-white transition-colors" title="Me gusta">
             <Heart size={20} />
           </button>
-          <button onClick={toggleQueue} className="p-2 hover:text-white transition-colors">
+          <button onClick={toggleQueue} className="p-2 hover:text-white transition-colors" title="Cola">
             <ListMusic size={20} />
           </button>
-          <button className="p-2 hover:text-white transition-colors">
+          <button onClick={toggleLyrics} className="p-2 hover:text-white transition-colors" title="Letras">
             <Mic2 size={20} />
           </button>
         </motion.div>
