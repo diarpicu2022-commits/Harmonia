@@ -1,9 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, Types } from 'mongoose';
 
 // ─── User Model ───────────────────────────────────────────────────────────────
 
 export interface IUser extends Document {
-  _id: string;
   email: string;
   displayName: string;
   avatar?: string;
@@ -26,7 +25,11 @@ const UserSchema = new Schema<IUser>({
   googleId: { type: String, sparse: true, unique: true },
   passwordHash: { type: String },
   preferences: {
-    mood: { type: String, enum: ['happy', 'energetic', 'calm', 'melancholic', 'focused', 'romantic', 'default'], default: 'default' },
+    mood: {
+      type: String,
+      enum: ['happy', 'energetic', 'calm', 'melancholic', 'focused', 'romantic', 'default'],
+      default: 'default',
+    },
     favoriteGenres: [{ type: String }],
     themeColor: { type: String, default: '#7C3AED' },
   },
@@ -42,7 +45,6 @@ export const User = mongoose.model<IUser>('User', UserSchema);
 // ─── Song Model ───────────────────────────────────────────────────────────────
 
 export interface ISong extends Document {
-  _id: string;
   title: string;
   artist: string;
   album: string;
@@ -56,7 +58,7 @@ export interface ISong extends Document {
   genre?: string;
   year?: number;
   lyrics?: string;
-  uploadedBy?: string;
+  uploadedBy?: Types.ObjectId;
   isPublic: boolean;
   playCount: number;
   tags: string[];
@@ -82,7 +84,7 @@ const SongSchema = new Schema<ISong>({
   genre: { type: String },
   year: { type: Number },
   lyrics: { type: String },
-  uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' } as any,
+  uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   isPublic: { type: Boolean, default: false },
   playCount: { type: Number, default: 0 },
   tags: [{ type: String }],
@@ -102,8 +104,8 @@ export interface IPlaylist extends Document {
   name: string;
   description?: string;
   coverArt?: string;
-  owner: string;
-  songs: string[];
+  owner: Types.ObjectId;
+  songs: Types.ObjectId[];
   isPublic: boolean;
   mood?: string;
   totalDuration: number;
@@ -114,7 +116,7 @@ const PlaylistSchema = new Schema<IPlaylist>({
   name: { type: String, required: true, trim: true },
   description: { type: String },
   coverArt: { type: String },
-  owner: { type: Schema.Types.ObjectId, ref: 'User', required: true } as any,
+  owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   songs: [{ type: Schema.Types.ObjectId, ref: 'Song' }],
   isPublic: { type: Boolean, default: false },
   mood: { type: String },
