@@ -30,7 +30,7 @@ export interface Playlist {
   name: string;
   description?: string;
   coverArt?: string;
-  songs: Song[];
+  songs: string[];
   mood?: MoodType;
   totalDuration: number;
   createdAt: string;
