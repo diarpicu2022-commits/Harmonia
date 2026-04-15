@@ -34,8 +34,23 @@ app.use(morgan('combined'));
 
 app.set('trust proxy', 1);
 
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = [
+  'http://localhost:5173',
+  frontendUrl,
+  'https://harmonia-git-main-diarpicu2022-commits-projects.vercel.app',
+  'https://harmonia-okm9f25l3-diarpicu2022-commits-projects.vercel.app',
+  'https://harmonia-42u3kfti9-diarpicu2022-commits-projects.vercel.app',
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],

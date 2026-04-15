@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { SearchResults, Song, Playlist, User, MoodAnalysis, AIRecommendation } from '../types';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, ''),
   timeout: 15000,
 });
 
@@ -37,7 +37,10 @@ export const authAPI = {
 
   verify: () => api.get<{ user: User }>('/auth/verify'),
 
-  googleLogin: () => { window.location.href = `${import.meta.env.VITE_API_URL || '/api'}/auth/google`; },
+  googleLogin: () => { 
+    const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '/api';
+    window.location.href = `${apiUrl}/auth/google`; 
+  },
 };
 
 // ─── Search ───────────────────────────────────────────────────────────────────
