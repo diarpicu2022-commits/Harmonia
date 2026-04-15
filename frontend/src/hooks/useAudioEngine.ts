@@ -87,6 +87,29 @@ export const useAudioEngine = () => {
       };
       initYT();
 
+    } else if (currentSong.source === 'spotify' || currentSong.source === 'deezer') {
+      // Spotify/Deezer: show message and use preview if available
+      const src = currentSong.previewUrl || '';
+      if (!src) {
+        console.warn('No preview available for', currentSong.source);
+        return;
+      }
+      currentHowl = new Howl({
+        src: [src],
+        html5: true,
+        volume: isMuted ? 0 : volume,
+        autoplay: isPlaying,
+        onload: () => {
+          const dur = currentHowl?.duration() || 0;
+          setDuration(dur || currentSong.duration || 0);
+        },
+        onend: () => nextSong(),
+        onplay: () => startProgressTracking(
+          () => currentHowl?.duration() || currentSong.duration || 0,
+          () => currentHowl?.seek() as number || 0
+        ),
+        onloaderror: (_, err) => console.error('Audio load error:', err),
+      });
     } else if (currentSong.audioUrl || currentSong.previewUrl) {
       // Howler for local / preview audio
       const src = currentSong.audioUrl?.startsWith('/')
