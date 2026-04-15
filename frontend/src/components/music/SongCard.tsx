@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, Music2, Plus, ListPlus, Clock, Info, MoreHorizontal } from 'lucide-react';
+import { Music2 } from 'lucide-react';
 import { usePlayerStore } from '../../store';
-import toast from 'react-hot-toast';
 import type { Song } from '../../types';
 
 const formatDuration = (s: number) => {
@@ -14,190 +13,57 @@ interface Props {
   song: Song;
   index: number;
   onPlay?: () => void;
-  onAddToQueue?: () => void;
 }
 
-const SOURCE_BADGE: Record<string, { label: string; color: string }> = {
-  youtube: { label: 'YT', color: '#EF4444' },
-  spotify: { label: 'SP', color: '#1DB954' },
-  deezer: { label: 'DZ', color: '#EF5466' },
-  local: { label: 'LOCAL', color: '#7C3AED' },
-  soundcloud: { label: 'SC', color: '#FF5500' },
-};
-
-export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
-  const { currentSong, isPlaying, togglePlay, currentQueue, addToQueue, loadQueue } = usePlayerStore();
+export default function SongCard({ song, index, onPlay }: Props) {
+  const { currentSong, isPlaying, togglePlay } = usePlayerStore();
   const isActive = currentSong?.id === song.id;
-  const [showMenu, setShowMenu] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-
+  
   const handlePlay = () => {
     if (isActive) togglePlay();
     else onPlay?.();
   };
 
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    alert('Botón funcionando!');
-    setShowMenu(!showMenu);
+  const testClick = (msg: string) => {
+    alert(msg);
   };
 
-  const handleAddToQueueStart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    alert('Agregar al inicio funcionando!');
-    addToQueue(song, 'start');
-    toast.success('Agregada al inicio de la cola');
-    setShowMenu(false);
-  };
-
-  const handleAddToQueueEnd = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    alert('Agregar al final funcionando!');
-    addToQueue(song, 'end');
-    toast.success('Agregada al final de la cola');
-    setShowMenu(false);
-  };
-
-  const badge = SOURCE_BADGE[song.source];
+  const badge = (() => {
+    const map: Record<string, { label: string; color: string }> = {
+      youtube: { label: 'YT', color: '#EF4444' },
+      spotify: { label: 'SP', color: '#1DB954' },
+      deezer: { label: 'DZ', color: '#EF5466' },
+    };
+    return map[song.source];
+  })();
 
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.04 }}
-        whileTap={{ scale: 0.98 }}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer group"
-        style={isActive ? { background: 'var(--mood-surface)', borderLeft: '3px solid var(--mood-primary)' } : {}}
-        onClick={handlePlay}
-      >
-        <div className="w-8 text-center flex-shrink-0">
-          <span className="text-sm text-white/25" style={{ color: isActive ? 'var(--mood-primary)' : undefined }}>
-            {isActive && isPlaying ? (
-              <span className="flex items-center justify-center gap-0.5">
-                {[1,2,3].map(i => <span key={i} className="waveform-bar" style={{ height: '12px', animationDelay: `${i*0.1}s` }} />)}
-              </span>
-            ) : index + 1}
-          </span>
-        </div>
-
-        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
-          {song.coverArt ? (
-            <img src={song.coverArt} alt="" className="w-full h-full object-cover" loading="lazy" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Music2 size={16} style={{ color: 'var(--mood-primary)' }} />
-            </div>
-          )}
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate" style={{ color: isActive ? 'var(--mood-primary)' : 'white' }}>
-            {song.title}
-          </p>
-          <p className="text-xs text-white/40 truncate">
-            {song.artist}{song.album && song.album !== 'Unknown Album' ? ` · ${song.album}` : ''}
-          </p>
-        </div>
-
-        {badge && (
-          <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0 opacity-60"
-            style={{ background: badge.color + '22', color: badge.color, fontSize: '9px' }}>
-            {badge.label}
-          </span>
-        )}
-
-        <span className="text-xs flex-shrink-0 text-white/30" style={{ minWidth: '36px', textAlign: 'right' }}>
-          {formatDuration(song.duration)}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: index * 0.04 }}
+      onClick={handlePlay}
+      className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 cursor-pointer"
+      style={isActive ? { background: 'var(--mood-surface)' } : {}}
+    >
+      <div className="w-8 text-center text-white/40">{index + 1}</div>
+      <div className="w-10 h-10 rounded bg-white/10 flex items-center justify-center overflow-hidden">
+        {song.coverArt ? (
+          <img src={song.coverArt} alt="" className="w-full h-full object-cover" />
+        ) : <Music2 size={16} className="text-white/30" />}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-white truncate">{song.title}</p>
+        <p className="text-xs text-white/40 truncate">{song.artist}</p>
+      </div>
+      {badge && (
+        <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: badge.color + '22', color: badge.color }}>
+          {badge.label}
         </span>
-
-        <div className="relative flex-shrink-0" style={{ width: '40px', height: '40px' }}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              alert('CLICK DETECTADO');
-            }}
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              background: 'red', 
-              color: 'white',
-              border: '2px solid yellow',
-              borderRadius: '8px',
-              fontSize: '10px',
-              cursor: 'pointer',
-              zIndex: 9999
-            }}
-          >
-            MENU
-          </button>
-        </div>
-          
-          {showMenu && (
-            <div 
-              className="absolute right-0 top-full mt-1 w-44 bg-gray-900 rounded-xl border border-white/10 z-[100] py-1"
-              style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
-            >
-              <button
-                onClick={handleAddToQueueStart}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/80 hover:bg-white/5 text-left"
-              >
-                <Clock size={14} /> Agregar al inicio
-              </button>
-              <button
-                onClick={handleAddToQueueEnd}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/80 hover:bg-white/5 text-left"
-              >
-                <ListPlus size={14} /> Agregar al final
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowMenu(false); setShowInfo(true); }}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-white/80 hover:bg-white/5 text-left"
-              >
-                <Info size={14} /> Ver información
-              </button>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {showInfo && (
-        <div 
-          className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4"
-          onClick={() => setShowInfo(false)}
-        >
-          <div 
-            className="bg-gray-900 rounded-2xl p-5 w-full max-w-sm"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/10">
-                {song.coverArt ? (
-                  <img src={song.coverArt} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Play size={24} className="text-white/30" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-white truncate">{song.title}</h3>
-                <p className="text-sm text-white/60 truncate">{song.artist}</p>
-              </div>
-            </div>
-            <div className="space-y-2 text-sm text-white/60">
-              <div className="flex justify-between"><span>Álbum</span><span className="text-white/80 truncate">{song.album || '—'}</span></div>
-              <div className="flex justify-between"><span>Duración</span><span className="text-white/80">{formatDuration(song.duration)}</span></div>
-              <div className="flex justify-between"><span>Fuente</span><span className="text-white/80 capitalize">{song.source}</span></div>
-            </div>
-            <button onClick={() => setShowInfo(false)} className="w-full mt-4 py-2.5 rounded-xl bg-purple-600 text-white font-medium">
-              Cerrar
-            </button>
-          </div>
-        </div>
       )}
-    </>
+      <span className="text-xs text-white/30">{formatDuration(song.duration)}</span>
+      <button onClick={(e) => { e.stopPropagation(); testClick('BOTON + FUNCIONA'); }} style={{ padding: '8px', background: 'blue', color: 'white', borderRadius: '4px', fontSize: '10px' }}>+</button>
+      <button onClick={(e) => { e.stopPropagation(); testClick('BOTON MENU FUNCIONA'); }} style={{ padding: '8px', background: 'green', color: 'white', borderRadius: '4px', fontSize: '10px' }}>⋯</button>
+    </motion.div>
   );
 }
