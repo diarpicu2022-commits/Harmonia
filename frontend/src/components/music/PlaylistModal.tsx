@@ -30,7 +30,7 @@ export default function PlaylistModal({ song, isOpen, onClose }: Props) {
     setIsCreating(true);
     try {
       const { data } = await playlistAPI.create(newPlaylistName.trim());
-      const newPlaylistId = data.playlist._id || data.playlist.id;
+      const newPlaylistId = data.playlist.id;
       await addSongToPlaylist(newPlaylistId);
       setNewPlaylistName('');
     } catch {
@@ -43,9 +43,9 @@ export default function PlaylistModal({ song, isOpen, onClose }: Props) {
   const addSongToPlaylist = async (playlistId: string) => {
     setLoading(true);
     try {
-      const pl = playlists.find(p => p._id === playlistId);
+      const pl = playlists.find(p => p.id === playlistId || p._id === playlistId);
       const currentSongs = pl?.songs || [];
-      const songId = song.id.replace(/^(sp_|yt_|dz_)/, '');
+      const songId = song.id;
       await playlistAPI.updateSongs(playlistId, [...currentSongs, songId]);
       toast.success('Canción agregada a playlist');
       onClose();
