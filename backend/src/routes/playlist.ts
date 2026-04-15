@@ -12,11 +12,12 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.get('/:id', authMiddleware, async (req, res) => {
   const userId = (req as any).userId;
-  const playlist = await Playlist.findOne({ _id: req.params.id, owner: userId });
+  const { id } = req.params;
+  const playlist = await Playlist.findOne({ owner: userId, $or: [{ _id: id }, { _id: require('mongoose').Types.ObjectId.createFromHexString(id) }] });
   if (!playlist) {
     return res.status(404).json({ error: 'Playlist no encontrada' });
   }
-  res.json({ playlist });
+  res.json({ playlist: { ...playlist.toObject(), _id: playlist._id.toString() } });
 });
 
 router.post('/', authMiddleware, async (req, res) => {
