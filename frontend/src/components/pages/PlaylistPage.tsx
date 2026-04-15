@@ -5,6 +5,7 @@ import { Play, Shuffle, Music2, Loader2 } from 'lucide-react';
 import { usePlaylistStore, usePlayerStore } from '../../store';
 import { searchAPI } from '../../services/api';
 import type { Song } from '../../types';
+import SongCard from '../music/SongCard';
 
 async function fetchSongDetails(songId: string): Promise<Song | null> {
   const prefix = songId.substring(0, 2);
