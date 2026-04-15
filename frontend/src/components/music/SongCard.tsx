@@ -36,7 +36,14 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
     else onPlay?.();
   };
 
+  const handleMenuClick = (e: React.MouseEvent) => {
+    console.log('Menu clicked');
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
+
   const handleAddToQueueStart = (e: React.MouseEvent) => {
+    console.log('Add to start clicked');
     e.stopPropagation();
     addToQueue(song, 'start');
     toast.success('Agregada al inicio de la cola');
@@ -44,6 +51,7 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
   };
 
   const handleAddToQueueEnd = (e: React.MouseEvent) => {
+    console.log('Add to end clicked');
     e.stopPropagation();
     addToQueue(song, 'end');
     toast.success('Agregada al final de la cola');
@@ -105,7 +113,7 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
 
         <div className="relative flex-shrink-0">
           <button
-            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+            onClick={handleMenuClick}
             className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
           >
             <MoreHorizontal size={18} />
