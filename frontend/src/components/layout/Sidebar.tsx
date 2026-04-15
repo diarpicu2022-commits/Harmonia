@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Home, Search, Library, Upload, Plus, LogOut, Music2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, Search, Library, Upload, Plus, LogOut, Music2, X } from 'lucide-react';
 import { useAuthStore, usePlaylistStore } from '../../store';
 import { playlistAPI } from '../../services/api';
 import toast from 'react-hot-toast';
@@ -16,17 +17,25 @@ export default function Sidebar() {
   const { user, logout } = useAuthStore();
   const { playlists, addPlaylist } = usePlaylistStore();
   const navigate = useNavigate();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState('');
 
   const handleCreatePlaylist = async () => {
-    const name = prompt('Nombre de la playlist:', `Mi Playlist ${playlists.length + 1}`);
-    const playlistName = name?.trim() || `Mi Playlist ${playlists.length + 1}`;
+    if (!newPlaylistName.trim()) return;
     try {
-      const { data } = await playlistAPI.create(playlistName);
+      const { data } = await playlistAPI.create(newPlaylistName.trim());
       addPlaylist({ ...data.playlist, songs: [] });
+      setShowCreateModal(false);
+      setNewPlaylistName('');
       navigate(`/playlist/${data.playlist.id}`);
     } catch {
       toast.error('No se pudo crear la playlist');
     }
+  };
+
+  const openCreateModal = () => {
+    setNewPlaylistName(`Mi Playlist ${playlists.length + 1}`);
+    setShowCreateModal(true);
   };
 
   return (
@@ -85,7 +94,7 @@ export default function Sidebar() {
           <motion.button
             whileHover={{ scale: 1.1, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
-            onClick={handleCreatePlaylist}
+            onClick={openCreateModal}
             className="w-6 h-6 rounded-full flex items-center justify-center"
             style={{ background: 'var(--mood-surface)', color: 'var(--mood-primary)' }}
           >
@@ -151,6 +160,46 @@ export default function Sidebar() {
           </motion.button>
         </div>
       </div>
+
+      {/* Create Playlist Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowCreateModal(false)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md glass-strong rounded-2xl p-5"
+              onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white" style={{ fontFamily: "'Clash Display',sans-serif" }}>
+                  Nueva Playlist
+                </h3>
+                <button onClick={() => setShowCreateModal(false)} className="text-white/40 hover:text-white">
+                  <X size={20} />
+                </button>
+              </div>
+              <input
+                type="text"
+                value={newPlaylistName}
+                onChange={e => setNewPlaylistName(e.target.value)}
+                placeholder="Nombre de la playlist"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-purple-500"
+                autoFocus
+                onKeyDown={e => e.key === 'Enter' && handleCreatePlaylist()}
+              />
+              <div className="flex gap-3 mt-5">
+                <button onClick={() => setShowCreateModal(false)} className="flex-1 py-3 rounded-xl text-white/60 hover:text-white transition-colors">
+                  Cancelar
+                </button>
+                <button onClick={handleCreatePlaylist} disabled={!newPlaylistName.trim()}
+                  className="flex-1 py-3 rounded-xl btn-mood font-semibold disabled:opacity-50 disabled:cursor-not-allowed">
+                  Crear
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.aside>
   );
 }
