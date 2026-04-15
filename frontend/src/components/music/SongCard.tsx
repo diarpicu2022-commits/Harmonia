@@ -44,73 +44,52 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: index * 0.04 }}
-        whileHover={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
-        onClick={handlePlay}
-        className="song-card flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer group"
+        whileTap={{ scale: 0.98 }}
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer group active:bg-white/5"
         style={isActive ? { background: 'var(--mood-surface)', borderLeft: '3px solid var(--mood-primary)' } : {}}
+        onClick={handlePlay}
       >
-        {/* Index / Play button */}
         <div className="w-8 text-center flex-shrink-0">
-          <span className="text-sm text-white/25 group-hover:hidden block"
-            style={{ color: isActive ? 'var(--mood-primary)' : undefined }}>
+          <span className="text-sm text-white/25" style={{ color: isActive ? 'var(--mood-primary)' : undefined }}>
             {isActive && isPlaying ? (
               <span className="flex items-center justify-center gap-0.5">
                 {[1,2,3].map(i => <span key={i} className="waveform-bar" style={{ height: '12px', animationDelay: `${i*0.1}s` }} />)}
               </span>
             ) : index + 1}
           </span>
-          <span className="hidden group-hover:block">
-            {isActive && isPlaying
-              ? <Pause size={16} className="mx-auto" style={{ color: 'var(--mood-primary)' }} />
-              : <Play size={16} className="mx-auto" style={{ color: 'var(--mood-primary)' }} />
-            }
-          </span>
         </div>
 
-        {/* Cover */}
-        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0"
-          style={{ background: 'rgba(255,255,255,0.06)' }}>
-          {song.coverArt
-            ? <img src={song.coverArt} alt="" className="w-full h-full object-cover" loading="lazy" />
-            : <div className="w-full h-full flex items-center justify-center">
-                <Music2 size={16} style={{ color: 'var(--mood-primary)' }} />
-              </div>
-          }
+        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5">
+          {song.coverArt ? (
+            <img src={song.coverArt} alt="" className="w-full h-full object-cover" loading="lazy" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Music2 size={16} style={{ color: 'var(--mood-primary)' }} />
+            </div>
+          )}
         </div>
 
-        {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate"
-            style={{ color: isActive ? 'var(--mood-primary)' : 'rgba(255,255,255,0.85)' }}>
+          <p className="text-sm font-medium truncate" style={{ color: isActive ? 'var(--mood-primary)' : 'white' }}>
             {song.title}
           </p>
-          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-xs text-white/40 truncate">
             {song.artist}{song.album && song.album !== 'Unknown Album' ? ` · ${song.album}` : ''}
           </p>
         </div>
 
-        {/* Source badge */}
         {badge && (
           <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0 opacity-60"
-            style={{ background: badge.color + '22', color: badge.color, fontSize: '9px', letterSpacing: '0.05em' }}>
+            style={{ background: badge.color + '22', color: badge.color, fontSize: '9px' }}>
             {badge.label}
           </span>
         )}
 
-        {/* Duration */}
-        <span className="text-xs flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)', minWidth: '36px', textAlign: 'right' }}>
+        <span className="text-xs flex-shrink-0 text-white/30" style={{ minWidth: '36px', textAlign: 'right' }}>
           {formatDuration(song.duration)}
         </span>
 
-        {/* Actions - siempre visible en móvil, hover en desktop */}
-        <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
-          {onAddToQueue && (
-            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-              onClick={(e) => { e.stopPropagation(); onAddToQueue(); }}
-              className="p-1.5 rounded-lg hover:bg-white/8 text-white/40 hover:text-white/80 transition-colors">
-              <Play size={14} />
-            </motion.button>
-          )}
+        <div className="flex-shrink-0" style={{ position: 'relative' }}>
           <SongMenuDropdown 
             song={song} 
             index={index}

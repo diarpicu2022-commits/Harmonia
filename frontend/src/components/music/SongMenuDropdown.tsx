@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MoreHorizontal, ListPlus, Play, Trash2, Info, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { MoreHorizontal, ListPlus, Play, Info, Plus, Clock } from 'lucide-react';
 import { usePlayerStore } from '../../store';
 import toast from 'react-hot-toast';
 import type { Song } from '../../types';
@@ -10,14 +10,6 @@ interface Props {
   onAddToPlaylist: () => void;
   index: number;
 }
-
-const MENU_ITEMS = [
-  { icon: Play, label: 'Reproducir ahora', action: 'play-now' },
-  { icon: ListPlus, label: 'Agregar al inicio de la cola', action: 'add-start' },
-  { icon: ListPlus, label: 'Agregar al final de la cola', action: 'add-end' },
-  { icon: Plus, label: 'Agregar a playlist', action: 'playlist' },
-  { icon: Info, label: 'Ver información', action: 'info' },
-];
 
 export default function SongMenuDropdown({ song, onAddToPlaylist, index }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,28 +27,22 @@ export default function SongMenuDropdown({ song, onAddToPlaylist, index }: Props
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleAction = (action: string) => {
+  const handlePlayNow = () => {
+    loadQueue(currentQueue, index);
+    toast.success('Reproduciendo');
     setIsOpen(false);
-    switch (action) {
-      case 'play-now':
-        loadQueue(currentQueue, index);
-        toast.success('Reproduciendo');
-        break;
-      case 'add-start':
-        addToQueue(song, 'start');
-        toast.success('Agregada al inicio');
-        break;
-      case 'add-end':
-        addToQueue(song, 'end');
-        toast.success('Agregada al final');
-        break;
-      case 'playlist':
-        onAddToPlaylist();
-        break;
-      case 'info':
-        setShowInfo(true);
-        break;
-    }
+  };
+
+  const handleAddToQueueStart = () => {
+    addToQueue(song, 'start');
+    toast.success('Agregada al inicio');
+    setIsOpen(false);
+  };
+
+  const handleAddToQueueEnd = () => {
+    addToQueue(song, 'end');
+    toast.success('Agregada al final');
+    setIsOpen(false);
   };
 
   const formatDuration = (s: number) => {
@@ -66,68 +52,87 @@ export default function SongMenuDropdown({ song, onAddToPlaylist, index }: Props
 
   return (
     <>
-      <div className="relative" ref={menuRef}>
-        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-          onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
-          className="p-1.5 rounded-lg hover:bg-white/8 text-white/40 hover:text-white/80 transition-colors">
-          <MoreHorizontal size={14} />
-        </motion.button>
+      <button
+        onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+        className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+        style={{ minWidth: '32px', minHeight: '32px' }}
+      >
+        <MoreHorizontal size={18} />
+      </button>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute right-0 top-full mt-1 w-56 glass-strong rounded-xl py-1 z-50 shadow-xl"
-              style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-              {MENU_ITEMS.map((item, i) => (
-                <motion.button key={item.action} whileHover={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
-                  onClick={() => handleAction(item.action)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/70 hover:text-white transition-colors text-left">
-                  <item.icon size={16} className="text-white/50" />
-                  {item.label}
-                </motion.button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      {isOpen && (
+        <div 
+          className="absolute right-0 top-full mt-1 w-48 bg-gray-900 rounded-xl border border-white/10 z-50 py-1"
+          style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
+        >
+          <button
+            onClick={handlePlayNow}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 text-left"
+          >
+            <Play size={16} /> Reproducir ahora
+          </button>
+          <button
+            onClick={handleAddToQueueStart}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 text-left"
+          >
+            <Clock size={16} /> Agregar al inicio
+          </button>
+          <button
+            onClick={handleAddToQueueEnd}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 text-left"
+          >
+            <ListPlus size={16} /> Agregar al final
+          </button>
+          <button
+            onClick={() => { setIsOpen(false); onAddToPlaylist(); }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 text-left"
+          >
+            <Plus size={16} /> Agregar a playlist
+          </button>
+          <button
+            onClick={() => { setIsOpen(false); setShowInfo(true); }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/80 hover:bg-white/5 text-left"
+          >
+            <Info size={16} /> Ver información
+          </button>
+        </div>
+      )}
 
-      <AnimatePresence>
-        {showInfo && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowInfo(false)}>
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-              className="w-full max-w-sm glass-strong rounded-2xl p-5"
-              onClick={e => e.stopPropagation()}>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/10">
-                  {song.coverArt ? (
-                    <img src={song.coverArt} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Play size={24} style={{ color: 'var(--mood-primary)' }} />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-white truncate">{song.title}</h3>
-                  <p className="text-sm text-white/60 truncate">{song.artist}</p>
-                </div>
+      {showInfo && (
+        <div 
+          className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowInfo(false)}
+        >
+          <div 
+            className="bg-gray-900 rounded-2xl p-5 w-full max-w-sm"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/10">
+                {song.coverArt ? (
+                  <img src={song.coverArt} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Play size={24} className="text-white/30" />
+                  </div>
+                )}
               </div>
-              <div className="space-y-2 text-sm text-white/60">
-                <div className="flex justify-between"><span>Álbum</span><span className="text-white/80 truncate">{song.album || '—'}</span></div>
-                <div className="flex justify-between"><span>Duración</span><span className="text-white/80">{formatDuration(song.duration)}</span></div>
-                <div className="flex justify-between"><span>Fuente</span><span className="text-white/80 capitalize">{song.source}</span></div>
-                {song.genre && <div className="flex justify-between"><span>Género</span><span className="text-white/80">{song.genre}</span></div>}
-                {song.year && <div className="flex justify-between"><span>Año</span><span className="text-white/80">{song.year}</span></div>}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-white truncate">{song.title}</h3>
+                <p className="text-sm text-white/60 truncate">{song.artist}</p>
               </div>
-              <button onClick={() => setShowInfo(false)} className="w-full mt-4 py-2 rounded-xl btn-mood text-sm">
-                Cerrar
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+            <div className="space-y-2 text-sm text-white/60">
+              <div className="flex justify-between"><span>Álbum</span><span className="text-white/80 truncate">{song.album || '—'}</span></div>
+              <div className="flex justify-between"><span>Duración</span><span className="text-white/80">{formatDuration(song.duration)}</span></div>
+              <div className="flex justify-between"><span>Fuente</span><span className="text-white/80 capitalize">{song.source}</span></div>
+            </div>
+            <button onClick={() => setShowInfo(false)} className="w-full mt-4 py-2.5 rounded-xl bg-purple-600 text-white font-medium">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
