@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { X, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2 } from 'lucide-react';
 import { usePlayerStore } from '../../store';
 
 export default function ExpandedPlayer() {
-  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, toggleRepeat, isShuffled, toggleShuffle, toggleQueue } = usePlayerStore();
+  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue } = usePlayerStore();
 
   const formatTime = (s: number) => {
     if (!s) return '0:00';
@@ -61,8 +61,8 @@ export default function ExpandedPlayer() {
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
           className="w-full mb-8">
           <div className="relative h-2 bg-white/10 rounded-full mb-3">
-            <motion.div className="absolute h-full rounded-full" style={{ background: 'var(--mood-primary)' }}
-              style={{ width: `${(progress / (duration || 1)) * 100}%` }} />
+            <motion.div className="absolute h-full rounded-full"
+              style={{ width: `${(progress / (duration || 1)) * 100}%`, background: 'var(--mood-primary)' }} />
           </div>
           <div className="flex justify-between text-sm text-white/40">
             <span>{formatTime(progress * (duration || 0))}</span>
@@ -90,7 +90,7 @@ export default function ExpandedPlayer() {
             <SkipForward size={28} fill="currentColor" />
           </button>
           
-          <button onClick={toggleRepeat} className={`p-3 rounded-full transition-colors ${repeatMode !== 'none' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+          <button onClick={cycleRepeat} className={`p-3 rounded-full transition-colors ${repeatMode !== 'none' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
             <Repeat size={22} />
           </button>
         </motion.div>
