@@ -137,7 +137,7 @@ export default function PlaylistPage() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-3 mt-6">
+        <div className="flex items-center gap-3 mt-6 pb-24">
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={() => loadQueue(songs, 0)}
             disabled={loading}
@@ -159,13 +159,13 @@ export default function PlaylistPage() {
               <MoreHorizontal size={18} />
             </motion.button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-gray-900 rounded-xl border border-white/10 z-50 py-1"
+              <div className="absolute right-0 top-full mt-2 w-56 bg-gray-900 rounded-xl border border-white/10 z-[100] py-1"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
                 <button
                   onClick={handleDeletePlaylist}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 text-left"
                 >
-                  <Trash2 size={16} /> Eliminar playlist
+                  <Trash2 size={18} /> Eliminar playlist
                 </button>
               </div>
             )}
