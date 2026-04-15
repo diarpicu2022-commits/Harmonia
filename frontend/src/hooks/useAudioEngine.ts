@@ -1,4 +1,3 @@
-/// <reference types="vite/client" />
 import { useEffect, useRef, useCallback } from 'react';
 import { Howl } from 'howler';
 import { usePlayerStore } from '../store';

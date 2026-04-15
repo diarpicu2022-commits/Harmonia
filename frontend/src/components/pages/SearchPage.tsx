@@ -33,10 +33,8 @@ export default function SearchPage() {
       const { data } = await searchAPI.searchAll(query);
       setResults(data);
       // default to source with most results
-      const sources = ['youtube', 'spotify', 'deezer'] as const;
-      const maxSource = sources
-        .slice()
-        .sort((a: typeof sources[number], b: typeof sources[number]) => (data[b]?.length || 0) - (data[a]?.length || 0))[0];
+      const maxSource = (['youtube', 'spotify', 'deezer'] as const)
+        .sort((a, b) => (data[b]?.length || 0) - (data[a]?.length || 0))[0];
       setActiveTab(maxSource);
     } catch {
       /* handle error */

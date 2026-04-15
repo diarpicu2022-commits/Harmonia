@@ -313,15 +313,3 @@ input[type="range"]::-webkit-slider-thumb:hover {
   background: linear-gradient(135deg, var(--mood-gradient-from), var(--mood-gradient-to));
   border-radius: 18px 18px 18px 4px;
 }
-
-/* ─── Fallback animation for UploadPage ────────────────────────────────────── */
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
