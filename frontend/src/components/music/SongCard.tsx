@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Music2, ListPlus, Clock, Info, Plus, MoreHorizontal } from 'lucide-react';
+import { Music2, ListPlus, Clock, Info, Plus, Minus, MoreHorizontal, Trash2 } from 'lucide-react';
 import { usePlayerStore } from '../../store';
 import toast from 'react-hot-toast';
 import type { Song } from '../../types';
@@ -16,6 +16,8 @@ interface Props {
   index: number;
   onPlay?: () => void;
   onAddToQueue?: () => void;
+  onRemoveFromPlaylist?: () => void;
+  showRemoveButton?: boolean;
 }
 
 const SOURCE_BADGE: Record<string, { label: string; color: string }> = {
@@ -26,7 +28,7 @@ const SOURCE_BADGE: Record<string, { label: string; color: string }> = {
   soundcloud: { label: 'SC', color: '#FF5500' },
 };
 
-export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
+export default function SongCard({ song, index, onPlay, onAddToQueue, onRemoveFromPlaylist, showRemoveButton }: Props) {
   const { currentSong, isPlaying, togglePlay, currentQueue, addToQueue, loadQueue } = usePlayerStore();
   const isActive = currentSong?.id === song.id;
   const [showMenu, setShowMenu] = useState(false);
@@ -105,12 +107,21 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
           {formatDuration(song.duration)}
         </span>
 
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowPlaylistModal(true); }}
-          className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-        >
-          <Plus size={18} />
-        </button>
+        {showRemoveButton ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRemoveFromPlaylist?.(); }}
+            className="p-2 rounded-lg hover:bg-red-500/20 text-white/50 hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+          >
+            <Minus size={18} />
+          </button>
+        ) : (
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowPlaylistModal(true); }}
+            className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+          >
+            <Plus size={18} />
+          </button>
+        )}
 
         <div className="relative flex-shrink-0">
           <button

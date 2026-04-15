@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Shuffle, Music2, Loader2 } from 'lucide-react';
+import { Play, Shuffle, Music2, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { usePlaylistStore, usePlayerStore } from '../../store';
 import { searchAPI, playlistAPI } from '../../services/api';
 import type { Song, Playlist } from '../../types';
 import SongCard from '../music/SongCard';
+import toast from 'react-hot-toast';
 
 async function fetchSongDetails(songId: string): Promise<Song | null> {
   if (!songId) return null;
@@ -30,11 +31,39 @@ async function fetchSongDetails(songId: string): Promise<Song | null> {
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { loadQueue, toggleShuffle } = usePlayerStore();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleRemoveSong = async (songId: string) => {
+    if (!playlist || !id) return;
+    const currentSongIds = playlist.songs || [];
+    const newSongIds = currentSongIds.filter(s => s !== songId);
+    try {
+      await playlistAPI.updateSongs(id, newSongIds);
+      setPlaylist({ ...playlist, songs: newSongIds });
+      setSongs(songs.filter(s => s.id !== songId));
+      toast.success('Canción eliminada de la playlist');
+    } catch {
+      toast.error('Error al eliminar canción');
+    }
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!id) return;
+    if (!confirm('¿Estás seguro de que quieres eliminar esta playlist?')) return;
+    try {
+      await playlistAPI.delete(id);
+      toast.success('Playlist eliminada');
+      navigate('/library');
+    } catch {
+      toast.error('Error al eliminar playlist');
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -121,6 +150,25 @@ export default function PlaylistPage() {
             style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <Shuffle size={16} /> Aleatorio
           </motion.button>
+          <div className="relative">
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-3 rounded-full text-sm font-medium transition-all"
+              style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <MoreHorizontal size={18} />
+            </motion.button>
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-gray-900 rounded-xl border border-white/10 z-50 py-1"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+                <button
+                  onClick={handleDeletePlaylist}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 text-left"
+                >
+                  <Trash2 size={16} /> Eliminar playlist
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -140,7 +188,9 @@ export default function PlaylistPage() {
             className="space-y-1">
             {songs.map((song, i) => (
               <SongCard key={song.id} song={song} index={i}
-                onPlay={() => loadQueue(songs, i)} />
+                onPlay={() => loadQueue(songs, i)}
+                showRemoveButton
+                onRemoveFromPlaylist={() => handleRemoveSong(song.id)} />
             ))}
           </motion.div>
         )}
