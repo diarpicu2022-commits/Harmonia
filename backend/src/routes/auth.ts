@@ -63,16 +63,24 @@ router.post('/login',
   }
 );
 
+const frontendUrls = [
+  'http://localhost:5173',
+  'https://harmonia-git-main-diarpicu2022-commits-projects.vercel.app',
+  'https://harmonia-okm9f25l3-diarpicu2022-commits-projects.vercel.app',
+  'https://harmonia-42u3kfti9-diarpicu2022-commits-projects.vercel.app',
+];
+const defaultFrontend = frontendUrls[1];
+
 // ─── Google OAuth ─────────────────────────────────────────────────────────────
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
 
 router.get('/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_failed` }),
+  passport.authenticate('google', { session: false, failureRedirect: `${defaultFrontend}/login?error=google_failed` }),
   (req: Request, res: Response) => {
     const user = req.user as any;
     const token = generateToken(user._id.toString());
-    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+    res.redirect(`${defaultFrontend}/auth/callback?token=${token}`);
   }
 );
 
