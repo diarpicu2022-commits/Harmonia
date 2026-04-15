@@ -4,6 +4,7 @@ import { Music2, ListPlus, Clock, Info, Plus, MoreHorizontal } from 'lucide-reac
 import { usePlayerStore } from '../../store';
 import toast from 'react-hot-toast';
 import type { Song } from '../../types';
+import PlaylistModal from './PlaylistModal';
 
 const formatDuration = (s: number) => {
   if (!s) return '—';
@@ -30,6 +31,7 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
   const isActive = currentSong?.id === song.id;
   const [showMenu, setShowMenu] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
 
   const handlePlay = () => {
     if (isActive) togglePlay();
@@ -103,6 +105,13 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
           {formatDuration(song.duration)}
         </span>
 
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowPlaylistModal(true); }}
+          className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+        >
+          <Plus size={18} />
+        </button>
+
         <div className="relative flex-shrink-0">
           <button
             onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
@@ -174,6 +183,12 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
           </div>
         </div>
       )}
+
+      <PlaylistModal 
+        song={song} 
+        isOpen={showPlaylistModal} 
+        onClose={() => setShowPlaylistModal(false)} 
+      />
     </>
   );
 }
