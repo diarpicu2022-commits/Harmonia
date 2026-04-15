@@ -59,12 +59,28 @@ export const musicAPI = {
 
 // ─── Playlists ────────────────────────────────────────────────────────────────
 
+const transformPlaylist = (p: any) => ({
+  ...p,
+  id: p._id || p.id,
+});
+
 export const playlistAPI = {
-  getAll: () => api.get<{ playlists: Playlist[] }>('/playlists'),
-  create: (name: string, description?: string) =>
-    api.post<{ playlist: Playlist }>('/playlists', { name, description }),
-  updateSongs: (id: string, songs: string[]) =>
-    api.put<{ playlist: Playlist }>(`/playlists/${id}/songs`, { songs }),
+  getAll: async () => {
+    const { data } = await api.get<{ playlists: Playlist[] }>('/playlists');
+    return { data: { playlists: data.playlists.map(transformPlaylist) } };
+  },
+  getById: async (id: string) => {
+    const { data } = await api.get<{ playlist: Playlist }>(`/playlists/${id}`);
+    return { data: { playlist: transformPlaylist(data.playlist) } };
+  },
+  create: async (name: string, description?: string) => {
+    const { data } = await api.post<{ playlist: Playlist }>('/playlists', { name, description });
+    return { data: { playlist: transformPlaylist(data.playlist) } };
+  },
+  updateSongs: async (id: string, songs: string[]) => {
+    const { data } = await api.put<{ playlist: Playlist }>(`/playlists/${id}/songs`, { songs });
+    return { data: { playlist: transformPlaylist(data.playlist) } };
+  },
   delete: (id: string) => api.delete(`/playlists/${id}`),
 };
 

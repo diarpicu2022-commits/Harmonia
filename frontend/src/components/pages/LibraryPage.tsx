@@ -1,5 +1,6 @@
 // LibraryPage.tsx
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Library, Music2 } from 'lucide-react';
 import { usePlayerStore, usePlaylistStore } from '../../store';
@@ -9,6 +10,7 @@ import SongCard from '../music/SongCard';
 export function LibraryPage() {
   const { playlists, setPlaylists } = usePlaylistStore();
   const { loadQueue } = usePlayerStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     playlistAPI.getAll().then(({ data }) => setPlaylists(data.playlists)).catch(() => {});
@@ -36,6 +38,8 @@ export function LibraryPage() {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
               whileHover={{ scale: 1.03, translateY: -4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate(`/playlist/${pl.id}`)}
               className="glass rounded-2xl p-4 cursor-pointer group"
             >
               <div className="w-full aspect-square rounded-xl overflow-hidden mb-3"

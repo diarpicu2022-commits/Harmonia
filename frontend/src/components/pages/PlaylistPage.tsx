@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Shuffle, Music2, Loader2 } from 'lucide-react';
 import { usePlaylistStore, usePlayerStore } from '../../store';
-import { searchAPI } from '../../services/api';
-import type { Song } from '../../types';
+import { searchAPI, playlistAPI } from '../../services/api';
+import type { Song, Playlist } from '../../types';
 import SongCard from '../music/SongCard';
 
 async function fetchSongDetails(songId: string): Promise<Song | null> {
@@ -22,25 +22,43 @@ async function fetchSongDetails(songId: string): Promise<Song | null> {
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
-  const { playlists } = usePlaylistStore();
   const { loadQueue, toggleShuffle } = usePlayerStore();
+  const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const playlist = playlists.find(p => p.id === id);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!playlist?.songs?.length) {
-      setLoading(false);
-      return;
-    }
+    if (!id) return;
     
-    Promise.all(playlist.songs.map(fetchSongDetails))
-      .then(results => setSongs(results.filter(Boolean) as Song[]))
+    playlistAPI.getById(id)
+      .then(({ data }) => {
+        setPlaylist(data.playlist);
+        return data.playlist?.songs || [];
+      })
+      .then(songIds => {
+        if (!songIds.length) {
+          setLoading(false);
+          return;
+        }
+        return Promise.all(songIds.map(fetchSongDetails));
+      })
+      .then(results => {
+        if (results) setSongs(results.filter(Boolean) as Song[]);
+      })
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [playlist]);
+  }, [id]);
 
-  if (!playlist) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 size={24} className="animate-spin text-white/30" />
+      </div>
+    );
+  }
+
+  if (error || !playlist) {
     return (
       <div className="flex items-center justify-center h-full">
         <p className="text-white/30">Playlist no encontrada</p>
