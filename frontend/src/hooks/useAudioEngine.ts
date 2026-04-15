@@ -36,9 +36,9 @@ export const useAudioEngine = () => {
     if (progressInterval) clearInterval(progressInterval);
     progressInterval = setInterval(() => {
       const pos = getPosition();
-      const dur = getDuration();
+      const dur = getDuration() || (currentSong?.duration || 1);
       if (dur > 0) setProgress(pos / dur);
-    }, 500);
+    }, 250);
   }, [setProgress]);
 
   // ─── Load & play song ──────────────────────────────────────────────────────
@@ -98,10 +98,19 @@ export const useAudioEngine = () => {
         html5: true,
         volume: isMuted ? 0 : volume,
         autoplay: isPlaying,
-        onload: () => setDuration(currentHowl?.duration() || 0),
+        onload: () => {
+          const dur = currentHowl?.duration() || 0;
+          setDuration(dur || currentSong.duration || 0);
+          if (!dur && currentSong.duration) {
+            startProgressTracking(
+              () => currentSong.duration || 0,
+              () => currentHowl?.seek() as number || 0
+            );
+          }
+        },
         onend: () => nextSong(),
         onplay: () => startProgressTracking(
-          () => currentHowl?.duration() || 0,
+          () => currentHowl?.duration() || currentSong.duration || 0,
           () => currentHowl?.seek() as number || 0
         ),
         onpause: () => { if (progressInterval) clearInterval(progressInterval); },
