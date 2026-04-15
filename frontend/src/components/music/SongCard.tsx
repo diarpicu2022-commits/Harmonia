@@ -102,8 +102,8 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
           {formatDuration(song.duration)}
         </span>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+        {/* Actions - siempre visible en móvil, hover en desktop */}
+        <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
           {onAddToQueue && (
             <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
               onClick={(e) => { e.stopPropagation(); onAddToQueue(); }}
