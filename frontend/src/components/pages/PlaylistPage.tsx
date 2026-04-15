@@ -8,11 +8,19 @@ import type { Song, Playlist } from '../../types';
 import SongCard from '../music/SongCard';
 
 async function fetchSongDetails(songId: string): Promise<Song | null> {
-  const prefix = songId.substring(0, 2);
-  const actualId = songId.substring(2);
+  if (!songId) return null;
+  
+  let source = 'spotify';
+  let actualId = songId;
+  
+  if (songId.startsWith('yt') || songId.startsWith('sp') || songId.startsWith('dz')) {
+    source = songId.substring(0, 2) === 'yt' ? 'youtube' : songId.substring(0, 2) === 'sp' ? 'spotify' : 'deezer';
+    actualId = songId.substring(2);
+  } else {
+    return null;
+  }
   
   try {
-    const source = prefix === 'yt' ? 'youtube' : prefix === 'sp' ? 'spotify' : 'deezer';
     const { data } = await searchAPI.searchSource(actualId, source);
     return data.results[0] || null;
   } catch {
