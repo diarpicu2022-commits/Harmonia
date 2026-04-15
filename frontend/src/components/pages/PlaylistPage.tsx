@@ -56,6 +56,7 @@ export default function PlaylistPage() {
   const handleDeletePlaylist = async () => {
     if (!id) return;
     if (!confirm('¿Estás seguro de que quieres eliminar esta playlist?')) return;
+    setShowMenu(false);
     try {
       await playlistAPI.delete(id);
       toast.success('Playlist eliminada');
