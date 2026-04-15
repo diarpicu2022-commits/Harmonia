@@ -111,13 +111,29 @@ export default function SongCard({ song, index, onPlay, onAddToQueue }: Props) {
           {formatDuration(song.duration)}
         </span>
 
-        <div className="relative flex-shrink-0">
+        <div className="relative flex-shrink-0" style={{ width: '40px', height: '40px' }}>
           <button
-            onClick={handleMenuClick}
-            className="p-2 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              alert('CLICK DETECTADO');
+            }}
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              background: 'red', 
+              color: 'white',
+              border: '2px solid yellow',
+              borderRadius: '8px',
+              fontSize: '10px',
+              cursor: 'pointer',
+              zIndex: 9999
+            }}
           >
-            <MoreHorizontal size={18} />
+            MENU
           </button>
+        </div>
           
           {showMenu && (
             <div 
