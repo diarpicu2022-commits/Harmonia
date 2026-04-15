@@ -6,6 +6,31 @@ import { authAPI } from '../../services/api';
 import { useAuthStore } from '../../store';
 import toast from 'react-hot-toast';
 
+// ─── FIX: InputField definido FUERA de LoginPage ─────────────────────────────
+// Si estuviera adentro de LoginPage, React lo trataría como un tipo de
+// componente nuevo en cada re-render (cada keystroke dispara setForm).
+// Eso desmonta/remonta el <input> quitando el foco en cada letra.
+// Afuera, la referencia es estable y React reutiliza el mismo nodo DOM.
+// ─────────────────────────────────────────────────────────────────────────────
+interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  icon: React.ElementType;
+}
+
+const InputField = ({ icon: Icon, ...props }: InputFieldProps) => (
+  <div className="relative">
+    <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+    <input
+      {...props}
+      className="w-full pl-11 pr-11 py-3.5 rounded-xl text-sm text-white/85 outline-none transition-all"
+      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'inherit' }}
+      onFocus={e => { e.currentTarget.style.borderColor = 'var(--mood-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
+      onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+    />
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [showPw, setShowPw] = useState(false);
@@ -35,19 +60,6 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-
-  const InputField = ({ icon: Icon, ...props }: any) => (
-    <div className="relative">
-      <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
-      <input
-        {...props}
-        className="w-full pl-11 pr-11 py-3.5 rounded-xl text-sm text-white/85 outline-none transition-all"
-        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'inherit' }}
-        onFocus={e => { e.currentTarget.style.borderColor = 'var(--mood-primary)'; e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; }}
-        onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-      />
-    </div>
-  );
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
