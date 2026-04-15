@@ -18,8 +18,10 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   const handleCreatePlaylist = async () => {
+    const name = prompt('Nombre de la playlist:', `Mi Playlist ${playlists.length + 1}`);
+    const playlistName = name?.trim() || `Mi Playlist ${playlists.length + 1}`;
     try {
-      const { data } = await playlistAPI.create(`Mi Playlist ${playlists.length + 1}`);
+      const { data } = await playlistAPI.create(playlistName);
       addPlaylist({ ...data.playlist, songs: [] });
       navigate(`/playlist/${data.playlist.id}`);
     } catch {
