@@ -1,12 +1,24 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2, Rewind, FastForward } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2, Youtube, ExternalLink } from 'lucide-react';
 import { usePlayerStore } from '../../store';
 import { useAudioEngine } from '../../hooks/useAudioEngine';
 
 export default function ExpandedPlayer() {
   const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics } = usePlayerStore();
   const { seekTo } = useAudioEngine();
+
+  useEffect(() => {
+    if (currentSong?.source === 'youtube' && currentSong.youtubeId) {
+      const container = document.getElementById('yt-player-container');
+      if (!container) {
+        const div = document.createElement('div');
+        div.id = 'yt-player-container';
+        div.style.display = 'none';
+        document.body.appendChild(div);
+      }
+    }
+  }, [currentSong]);
 
   const formatTime = (s: number) => {
     if (!s) return '0:00';
@@ -20,15 +32,8 @@ export default function ExpandedPlayer() {
     seekTo((e.clientX - rect.left) / rect.width);
   }, [seekTo]);
 
-  const handlePrev10s = () => {
-    if (progress > 10) seekTo(progress - 10);
-    else seekTo(0);
-  };
-
-  const handleNext30s = () => {
-    if (progress < duration - 30) seekTo(progress + 30);
-    else seekTo(duration);
-  };
+  const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
+  const hasVideo = isYouTube;
 
   if (!currentSong) {
     return (
@@ -117,6 +122,12 @@ export default function ExpandedPlayer() {
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
           className="flex items-center justify-center gap-4 text-white/40">
+          {hasVideo && (
+            <button onClick={() => window.open(`https://www.youtube.com/watch?v=${currentSong.youtubeId}`, '_blank')}
+              className="p-2 hover:text-red-500 transition-colors" title="Ver video">
+              <Youtube size={20} />
+            </button>
+          )}
           <button className="p-2 hover:text-white transition-colors" title="Me gusta">
             <Heart size={20} />
           </button>
