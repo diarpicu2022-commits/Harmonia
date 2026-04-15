@@ -56,17 +56,16 @@ export default function UploadPage() {
       </motion.div>
 
       {/* Drop zone */}
-      <motion.div
+      <div
         {...getRootProps()}
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ scale: 1.005 }}
-        transition={{ duration: 0.3 }}
-        className="relative rounded-3xl p-16 text-center cursor-pointer transition-all mb-8 overflow-hidden"
+        className="relative rounded-3xl p-16 text-center cursor-pointer transition-all mb-8 overflow-hidden motion-div"
         style={{
           border: `2px dashed ${isDragActive ? 'var(--mood-primary)' : 'rgba(255,255,255,0.1)'}`,
           background: isDragActive ? 'var(--mood-surface)' : 'rgba(255,255,255,0.02)',
           boxShadow: isDragActive ? '0 0 0 4px var(--mood-glow)' : 'none',
+          opacity: 0,
+          scale: 0.97,
+          animation: 'fadeInScale 0.3s ease forwards',
         }}
       >
         <input {...getInputProps()} />
@@ -100,7 +99,7 @@ export default function UploadPage() {
           <p className="text-white/40 text-sm mb-4">o haz clic para seleccionar archivos</p>
           <p className="text-white/20 text-xs">MP3 · WAV · FLAC · AAC · OGG · M4A · Máx. 50MB por archivo</p>
         </motion.div>
-      </motion.div>
+      </div>
 
       {/* Upload list */}
       <AnimatePresence>
