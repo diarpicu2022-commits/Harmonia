@@ -1,15 +1,43 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Shuffle, Music2 } from 'lucide-react';
+import { Play, Shuffle, Music2, Loader2 } from 'lucide-react';
 import { usePlaylistStore, usePlayerStore } from '../../store';
-import SongCard from '../music/SongCard';
+import { searchAPI } from '../../services/api';
+import type { Song } from '../../types';
+
+async function fetchSongDetails(songId: string): Promise<Song | null> {
+  const prefix = songId.substring(0, 2);
+  const actualId = songId.substring(2);
+  
+  try {
+    const source = prefix === 'yt' ? 'youtube' : prefix === 'sp' ? 'spotify' : 'deezer';
+    const { data } = await searchAPI.searchSource(actualId, source);
+    return data.results[0] || null;
+  } catch {
+    return null;
+  }
+}
 
 export default function PlaylistPage() {
   const { id } = useParams<{ id: string }>();
   const { playlists } = usePlaylistStore();
   const { loadQueue, toggleShuffle } = usePlayerStore();
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   const playlist = playlists.find(p => p.id === id);
+
+  useEffect(() => {
+    if (!playlist?.songs?.length) {
+      setLoading(false);
+      return;
+    }
+    
+    Promise.all(playlist.songs.map(fetchSongDetails))
+      .then(results => setSongs(results.filter(Boolean) as Song[]))
+      .finally(() => setLoading(false));
+  }, [playlist]);
 
   if (!playlist) {
     return (
@@ -19,7 +47,7 @@ export default function PlaylistPage() {
     );
   }
 
-  const totalMins = Math.floor(playlist.songs.reduce((a, s) => a + (s.duration || 0), 0) / 60);
+  const totalMins = Math.floor(songs.reduce((a, s) => a + (s.duration || 0), 0) / 60);
 
   return (
     <div className="min-h-full">
@@ -54,13 +82,15 @@ export default function PlaylistPage() {
         {/* Action buttons */}
         <div className="flex items-center gap-3 mt-6">
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            onClick={() => loadQueue(playlist.songs, 0)}
-            className="flex items-center gap-2 px-6 py-3 rounded-full btn-mood font-semibold text-sm">
+            onClick={() => loadQueue(songs, 0)}
+            disabled={loading}
+            className="flex items-center gap-2 px-6 py-3 rounded-full btn-mood font-semibold text-sm disabled:opacity-50">
             <Play size={18} fill="white" /> Reproducir
           </motion.button>
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            onClick={() => { loadQueue(playlist.songs, 0); toggleShuffle(); }}
-            className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium transition-all"
+            onClick={() => { loadQueue(songs, 0); toggleShuffle(); }}
+            disabled={loading}
+            className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-medium transition-all disabled:opacity-50"
             style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}>
             <Shuffle size={16} /> Aleatorio
           </motion.button>
@@ -69,7 +99,11 @@ export default function PlaylistPage() {
 
       {/* Songs list */}
       <div className="px-8 pb-8">
-        {playlist.songs.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 size={24} className="animate-spin text-white/30" />
+          </div>
+        ) : songs.length === 0 ? (
           <p className="text-white/25 text-sm text-center mt-12">
             Esta playlist está vacía. ¡Busca canciones y agrégalas!
           </p>
@@ -77,9 +111,9 @@ export default function PlaylistPage() {
           <motion.div initial="hidden" animate="show"
             variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04 } } }}
             className="space-y-1">
-            {playlist.songs.map((song, i) => (
+            {songs.map((song, i) => (
               <SongCard key={song.id} song={song} index={i}
-                onPlay={() => loadQueue(playlist.songs, i)} />
+                onPlay={() => loadQueue(songs, i)} />
             ))}
           </motion.div>
         )}
