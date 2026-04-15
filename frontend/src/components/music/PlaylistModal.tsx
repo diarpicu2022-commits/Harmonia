@@ -30,7 +30,8 @@ export default function PlaylistModal({ song, isOpen, onClose }: Props) {
     setIsCreating(true);
     try {
       const { data } = await playlistAPI.create(newPlaylistName.trim());
-      await addSongToPlaylist(data.playlist._id);
+      const newPlaylistId = data.playlist._id || data.playlist.id;
+      await addSongToPlaylist(newPlaylistId);
       setNewPlaylistName('');
     } catch {
       toast.error('Error al crear playlist');
@@ -101,8 +102,8 @@ export default function PlaylistModal({ song, isOpen, onClose }: Props) {
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {playlists.map(pl => (
-                  <motion.button key={pl._id} whileHover={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
-                    onClick={() => handleSelect(pl._id)}
+                  <motion.button key={pl._id || pl.id} whileHover={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
+                    onClick={() => handleSelect(pl._id || pl.id)}
                     disabled={loading}
                     className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors"
                   >
