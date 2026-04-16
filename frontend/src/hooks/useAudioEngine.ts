@@ -1,12 +1,13 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Howl } from 'howler';
-import { usePlayerStore } from '../store';
-import { userAPI } from '../services/api';
+import { usePlayerStore, useMoodStore } from '../store';
+import { userAPI, aiAPI } from '../services/api';
 
 let currentHowl: Howl | null = null;
 let ytPlayer: any = null;
 let ytReady = false;
 let progressInterval: ReturnType<typeof setInterval> | null = null;
+let songsPlayedCount = 0;
 
 // Load YouTube IFrame API once
 const loadYouTubeAPI = () => {
@@ -22,6 +23,7 @@ export const useAudioEngine = () => {
     currentSong, isPlaying, volume, isMuted,
     setProgress, setDuration, nextSong, progress, isFullscreen,
   } = usePlayerStore();
+  const { setMood } = useMoodStore();
   const playStartRef = useRef<number>(0);
   const songRef = useRef(currentSong);
   songRef.current = currentSong;
@@ -151,7 +153,19 @@ export const useAudioEngine = () => {
       // Track listening history on song change
       if (songRef.current && playStartRef.current) {
         const duration = Math.floor((Date.now() - playStartRef.current) / 1000);
-        if (duration > 5) userAPI.trackHistory(songRef.current.id, duration).catch(() => {});
+        if (duration > 5) {
+          userAPI.trackHistory(songRef.current.id, duration).catch(() => {});
+          songsPlayedCount++;
+          // Detect mood every 5 songs
+          if (songsPlayedCount >= 5) {
+            songsPlayedCount = 0;
+            aiAPI.detectMood([
+              { title: songRef.current.title, artist: songRef.current.artist }
+            ]).then((res: any) => {
+              if (res.data?.mood) setMood(res.data.mood, res.data.themeColor, res.data.energyLevel);
+            }).catch(() => {});
+          }
+        }
       }
     };
   }, [currentSong?.id]);
