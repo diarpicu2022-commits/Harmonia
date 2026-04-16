@@ -46,8 +46,6 @@ export default function ExpandedPlayer() {
       setShowVideo(false);
     }
   }, [isPlaying, showVideo, isYouTube]);
-  const hasVideo = isYouTube;
-  const currentTimeSeconds = Math.floor(progress * (duration || 0));
 
   const loadVideo = () => {
     setShowVideo(true);
