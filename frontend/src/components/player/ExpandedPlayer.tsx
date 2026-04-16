@@ -102,10 +102,13 @@ export default function ExpandedPlayer() {
   const hasVideo = isYouTube;
   const currentTimeSeconds = Math.floor(progress * (duration || 0));
 
+  const progressPercent = isNaN(progress) ? 0 : progress;
+  
   const formatTime = (s: number) => {
-    if (!s) return '0:00';
+    if (!s || isNaN(s)) return '0:00';
     const mins = Math.floor(s / 60);
     const secs = Math.floor(s % 60);
+    if (isNaN(mins)) return '0:00';
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -218,22 +221,23 @@ export default function ExpandedPlayer() {
             <motion.div 
               className="absolute h-full rounded-full"
               style={{ 
-                width: `${(progress / (duration || 1)) * 100}%`, 
+                width: `${progressPercent * 100}%`, 
                 background: 'var(--mood-primary)',
-                boxShadow: '0 0 10px var(--mood-glow)'
+                boxShadow: '0 0 10px var(--mood-glow)',
+                transition: 'width 0.1s linear'
               }} 
             />
             <motion.div 
               className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white opacity-0 group-hover:opacity-100 transition-opacity"
               style={{ 
-                left: `${(progress / (duration || 1)) * 100}%`,
+                left: `${progressPercent * 100}%`,
                 boxShadow: '0 0 10px var(--mood-glow)',
                 transform: 'translate(-50%, -50%)'
               }} 
             />
           </div>
           <div className="flex justify-between text-sm text-white/40">
-            <span>{formatTime(progress * (duration || 0))}</span>
+            <span>{formatTime(progress * duration)}</span>
             <span>{formatTime(duration)}</span>
           </div>
         </motion.div>
