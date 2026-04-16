@@ -20,11 +20,13 @@ const loadYouTubeAPI = () => {
 export const useAudioEngine = () => {
   const {
     currentSong, isPlaying, volume, isMuted,
-    setProgress, setDuration, nextSong, progress,
+    setProgress, setDuration, nextSong, progress, isFullscreen,
   } = usePlayerStore();
   const playStartRef = useRef<number>(0);
   const songRef = useRef(currentSong);
   songRef.current = currentSong;
+  const lastFullscreenRef = useRef(isFullscreen);
+  lastFullscreenRef.current = isFullscreen;
 
   const stopCurrent = useCallback(() => {
     if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
@@ -44,7 +46,12 @@ export const useAudioEngine = () => {
   // ─── Load & play song ──────────────────────────────────────────────────────
 
   useEffect(() => {
+    // Skip if fullscreen just toggled (same song, don't reload)
+    const fullscreenChanged = lastFullscreenRef.current !== isFullscreen;
+    lastFullscreenRef.current = isFullscreen;
+    
     if (!currentSong) return;
+    if (fullscreenChanged && songRef.current?.id === currentSong.id) return;
     stopCurrent();
     setProgress(0);
     playStartRef.current = Date.now();
