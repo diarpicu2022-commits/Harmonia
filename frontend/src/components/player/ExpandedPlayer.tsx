@@ -22,6 +22,10 @@ export default function ExpandedPlayer() {
     }
   }, [currentSong]);
 
+  const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
+  const hasVideo = isYouTube;
+  const currentTimeSeconds = Math.floor(progress * (duration || 0));
+
   const formatTime = (s: number) => {
     if (!s) return '0:00';
     const mins = Math.floor(s / 60);
@@ -42,8 +46,6 @@ export default function ExpandedPlayer() {
       setShowVideo(false);
     }
   }, [isPlaying, showVideo, isYouTube]);
-
-  const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
   const currentTimeSeconds = Math.floor(progress * (duration || 0));
 
