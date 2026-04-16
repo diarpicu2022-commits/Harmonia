@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2, Youtube, Maximize2 } from 'lucide-react';
 import { usePlayerStore } from '../../store';
@@ -9,6 +9,27 @@ export default function ExpandedPlayer() {
   const { seekTo } = useAudioEngine();
   const [showVideo, setShowVideo] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
+  const [ytPlayer, setYtPlayer] = useState<any>(null);
+  const [ytReady, setYtReady] = useState(false);
+  const prevYoutubeId = useRef(currentSong?.youtubeId);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+
+  const loadYouTubeAPI = useCallback(() => {
+    if ((window as any).YT) return Promise.resolve();
+    return new Promise<void>((resolve) => {
+      if (document.getElementById('yt-api-script')) {
+        const check = setInterval(() => {
+          if ((window as any).YT) { clearInterval(check); resolve(); }
+        }, 100);
+        return;
+      }
+      const tag = document.createElement('script');
+      tag.id = 'yt-api-script';
+      tag.src = 'https://www.youtube.com/iframe_api';
+      tag.onload = () => resolve();
+      document.head.appendChild(tag);
+    });
+  }, []);
 
   const handleShuffle = () => { toggleShuffle(); };
   const handleRepeat = () => { cycleRepeat(); };
@@ -22,17 +43,51 @@ export default function ExpandedPlayer() {
   const isCurrentSongLiked = currentSong ? likedSongs.some(s => s.id === currentSong.id) : false;
 
   useEffect(() => {
-    if (currentSong?.source === 'youtube' && currentSong.youtubeId) {
-      let container = document.getElementById('yt-player-container');
-      if (!container) {
-        container = document.createElement('div');
-        container.id = 'yt-player-container';
-        container.style.display = 'none';
-        document.body.appendChild(container);
+    const isYT = currentSong?.source === 'youtube' && !!currentSong.youtubeId;
+    if (!showVideo || !isYT || !currentSong?.youtubeId) return;
+    
+    loadYouTubeAPI().then(() => {
+      if (!(window as any).YT) return;
+      
+      if (!ytPlayer) {
+        const player = new (window as any).YT.Player(playerContainerRef.current, {
+          height: '100%',
+          width: '100%',
+          videoId: currentSong.youtubeId,
+          playerVars: { autoplay: 1, controls: 0, rel: 0, mute: 1 },
+          events: {
+            onReady: (e: any) => {
+              setYtPlayer(e.target);
+              setYtReady(true);
+              e.target.seekTo(progress * (duration || 0), true);
+              if (!isPlaying) e.target.pauseVideo();
+            },
+            onStateChange: (e: any) => {
+              if (e.data === 0) nextSong();
+            },
+          },
+        });
+        setYtPlayer(player);
+      } else if (ytReady) {
+        try {
+          if (prevYoutubeId.current !== currentSong.youtubeId) {
+            prevYoutubeId.current = currentSong.youtubeId;
+            ytPlayer.loadVideoById(currentSong.youtubeId);
+            ytPlayer.seekTo(progress * (duration || 0), true);
+          }
+        } catch {}
       }
-      setVideoKey(k => k + 1);
+    });
+  }, [showVideo, currentSong?.youtubeId]);
+
+  useEffect(() => {
+    if (ytPlayer && ytReady) {
+      try {
+        if (isPlaying) ytPlayer.playVideo();
+        else ytPlayer.pauseVideo();
+      } catch {}
     }
-  }, [currentSong?.youtubeId]);
+  }, [isPlaying, ytPlayer, ytReady]);
 
   const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
@@ -61,8 +116,20 @@ export default function ExpandedPlayer() {
   };
 
   const closeVideo = () => {
+    if (ytPlayer) {
+      try { ytPlayer.stopVideo(); } catch {}
+      try { ytPlayer.destroy(); } catch {}
+      setYtPlayer(null);
+      setYtReady(false);
+    }
     setShowVideo(false);
   };
+
+  useEffect(() => {
+    if (!showVideo && ytPlayer) {
+      try { ytPlayer.stopVideo(); } catch {}
+    }
+  }, [showVideo, ytPlayer]);
 
   if (!currentSong) {
     return (
@@ -91,14 +158,7 @@ export default function ExpandedPlayer() {
           className={`${showVideo && isYouTube ? 'w-full aspect-video' : 'w-72 h-72'} rounded-2xl overflow-hidden shadow-2xl mb-6 relative`}
           style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 100px var(--mood-glow)' }}>
           {showVideo && isYouTube ? (
-            <iframe
-              key={videoKey}
-              id="yt-embed-player"
-              className="w-full h-full rounded-2xl"
-              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1&start=${currentTimeSeconds}&mute=1`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            <div ref={playerContainerRef} className="w-full h-full rounded-2xl" />
           ) : currentSong.coverArt ? (
             <img src={currentSong.coverArt} alt="" className="w-full h-full object-cover" />
           ) : (
