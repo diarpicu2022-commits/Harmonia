@@ -13,7 +13,12 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#080810' }}>
-      <AnimatePresence mode="wait">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className={`flex h-full w-full ${isFullscreen ? 'fixed inset-0 z-50' : 'flex'}`}
+      >
         {isFullscreen ? (
           <ExpandedPlayer key="expanded" />
         ) : (
@@ -23,9 +28,6 @@ export default function AppLayout() {
               <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
                 <motion.div
                   key="main-content"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
                   className="h-full"
                 >
                   <Outlet />
@@ -37,7 +39,7 @@ export default function AppLayout() {
             {showLyrics && <LyricsPanel />}
           </>
         )}
-      </AnimatePresence>
+      </motion.div>
       <AIChat />
     </div>
   );
