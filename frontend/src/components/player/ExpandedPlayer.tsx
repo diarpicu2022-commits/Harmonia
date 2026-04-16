@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2, Youtube, Maximize2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX, Heart, ListMusic, Mic2, Minimize2, Youtube, Maximize2, Volume1 } from 'lucide-react';
 import { usePlayerStore } from '../../store';
 import { useAudioEngine } from '../../hooks/useAudioEngine';
 
 export default function ExpandedPlayer() {
-  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics, toggleLike, likedSongs } = usePlayerStore();
+  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics, toggleLike, likedSongs, setVolume } = usePlayerStore();
   const { seekTo } = useAudioEngine();
+  const [showVolSlider, setShowVolSlider] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
   const [ytPlayer, setYtPlayer] = useState<any>(null);
@@ -88,6 +89,14 @@ export default function ExpandedPlayer() {
       } catch {}
     }
   }, [isPlaying, ytPlayer, ytReady]);
+
+  useEffect(() => {
+    if (ytPlayer && ytReady) {
+      try {
+        ytPlayer.setVolume(isMuted ? 0 : volume * 100);
+      } catch {}
+    }
+  }, [volume, isMuted, ytPlayer, ytReady]);
 
   const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
@@ -224,6 +233,37 @@ export default function ExpandedPlayer() {
           <button onClick={handleRepeat} className={`p-3 rounded-full transition-colors ${repeatMode !== 'none' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
             <Repeat size={22} />
           </button>
+
+          <div className="relative flex items-center">
+            <button 
+              onClick={toggleMute} 
+              onMouseEnter={() => setShowVolSlider(true)}
+              className="p-2 text-white/60 hover:text-white transition-colors"
+              title={isMuted ? 'Activar sonido' : 'Silenciar'}>
+              {isMuted || volume === 0 ? <VolumeX size={20} /> : volume < 0.5 ? <Volume1 size={20} /> : <Volume2 size={20} />}
+            </button>
+            {showVolSlider && (
+              <motion.div 
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 120 }}
+                exit={{ opacity: 0, width: 0 }}
+                className="absolute left-full ml-3 flex items-center bg-black/60 rounded-full px-3 py-2"
+                onMouseLeave={() => setShowVolSlider(false)}>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  className="w-24 h-1 bg-white/20 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, var(--mood-primary) ${(isMuted ? 0 : volume) * 100}%, rgba(255,255,255,0.2) ${(isMuted ? 0 : volume) * 100}%)`
+                  }}
+                />
+              </motion.div>
+            )}
+          </div>
         </motion.div>
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
