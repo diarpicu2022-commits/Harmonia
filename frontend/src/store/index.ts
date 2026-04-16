@@ -85,6 +85,9 @@ interface PlayerStore extends PlayerState {
   toggleQueue: () => void;
   toggleLyrics: () => void;
   toggleFullscreen: () => void;
+  likedSongs: Song[];
+  toggleLike: (songId: string) => void;
+  isLiked: (songId: string) => boolean;
 }
 
 export const usePlayerStore = create<PlayerStore>()((set, get) => {
@@ -105,6 +108,20 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
     showQueue: false,
     showLyrics: false,
     isFullscreen: false,
+    likedSongs: [],
+
+    toggleLike: (songId) => set(s => {
+      const currentSong = s.currentSong;
+      if (!currentSong) return s;
+      
+      const exists = s.likedSongs.some(song => song.id === songId);
+      if (exists) {
+        return { likedSongs: s.likedSongs.filter(song => song.id !== songId) };
+      }
+      return { likedSongs: [...s.likedSongs, currentSong] };
+    }),
+
+    isLiked: (songId) => get().likedSongs.some(song => song.id === songId),
 
     loadQueue: (songs, startIndex = 0) => {
       playlist.fromArray(songs);

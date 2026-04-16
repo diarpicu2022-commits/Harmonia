@@ -20,7 +20,11 @@ export default function AppLayout() {
         className={`flex h-full w-full ${isFullscreen ? 'fixed inset-0 z-50' : 'flex'}`}
       >
         {isFullscreen ? (
-          <ExpandedPlayer key="expanded" />
+          <>
+            <ExpandedPlayer key="expanded" />
+            {showQueue && <QueuePanel />}
+            {showLyrics && <LyricsPanel />}
+          </>
         ) : (
           <>
             <Sidebar />

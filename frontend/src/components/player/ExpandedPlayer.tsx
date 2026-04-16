@@ -5,16 +5,21 @@ import { usePlayerStore } from '../../store';
 import { useAudioEngine } from '../../hooks/useAudioEngine';
 
 export default function ExpandedPlayer() {
-  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics } = usePlayerStore();
+  const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics, toggleLike, likedSongs } = usePlayerStore();
   const { seekTo } = useAudioEngine();
   const [showVideo, setShowVideo] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
 
-  const handleShuffle = () => { console.log('toggleShuffle clicked'); toggleShuffle(); };
-  const handleRepeat = () => { console.log('cycleRepeat clicked'); cycleRepeat(); };
-  const handleQueue = () => { console.log('toggleQueue clicked'); toggleQueue(); };
-  const handleLyrics = () => { console.log('toggleLyrics clicked'); toggleLyrics(); };
-  const handleLike = () => { console.log('like clicked'); };
+  const handleShuffle = () => { toggleShuffle(); };
+  const handleRepeat = () => { cycleRepeat(); };
+  const handleQueue = () => { toggleQueue(); };
+  const handleLyrics = () => { toggleLyrics(); };
+  const handleLike = () => {
+    if (currentSong) {
+      toggleLike(currentSong.id);
+    }
+  };
+  const isCurrentSongLiked = currentSong ? likedSongs.some(s => s.id === currentSong.id) : false;
 
   useEffect(() => {
     if (currentSong?.source === 'youtube' && currentSong.youtubeId) {
@@ -177,8 +182,8 @@ export default function ExpandedPlayer() {
               <Maximize2 size={20} />
             </button>
           )}
-          <button onClick={handleLike} className="p-2 hover:text-white transition-colors" title="Me gusta">
-            <Heart size={20} />
+          <button onClick={handleLike} className={`p-2 transition-colors ${isCurrentSongLiked ? 'text-red-500' : 'hover:text-white'}`} title="Me gusta">
+            <Heart size={20} fill={isCurrentSongLiked ? 'currentColor' : 'none'} />
           </button>
           <button onClick={handleQueue} className="p-2 hover:text-white transition-colors" title="Cola">
             <ListMusic size={20} />
