@@ -154,9 +154,9 @@ export class MusicSearchService {
     deezer: SearchResult[];
   }> {
     const [youtube, spotify, deezer] = await Promise.allSettled([
-      this.searchYouTube(query, 8),
-      this.searchSpotify(query, 8),
-      this.searchDeezer(query, 8),
+      this.searchYouTube(query, 20),
+      this.searchSpotify(query, 20),
+      this.searchDeezer(query, 20),
     ]);
 
     return {

@@ -47,16 +47,19 @@ export default function ExpandedPlayer() {
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     seekTo((e.clientX - rect.left) / rect.width);
-    if (showVideo && isYouTube) {
-      setVideoKey(k => k + 1);
-    }
-  }, [seekTo, showVideo, isYouTube]);
+  }, [seekTo]);
 
   useEffect(() => {
     if (!isPlaying && showVideo && isYouTube) {
       setShowVideo(false);
     }
   }, [isPlaying, showVideo, isYouTube]);
+
+  useEffect(() => {
+    if (currentSong && !isYouTube && showVideo) {
+      setShowVideo(false);
+    }
+  }, [currentSong, isYouTube, showVideo]);
 
   const loadVideo = () => {
     setShowVideo(true);
