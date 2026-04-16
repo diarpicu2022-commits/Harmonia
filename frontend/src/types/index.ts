@@ -75,9 +75,11 @@ export interface SearchResult {
   album?: string;
   duration: number;
   coverArt?: string;
+  thumbnailUrl?: string;
   source: 'youtube' | 'spotify' | 'soundcloud' | 'deezer';
   youtubeId?: string;
   spotifyId?: string;
+  deezerId?: string;
   previewUrl?: string;
   sourceUrl?: string;
 }

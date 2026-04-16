@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp, Clock, ChevronRight } from 'lucide-react';
 import { useAuthStore, useMoodStore, usePlayerStore } from '../../store';
-import { aiAPI, musicAPI } from '../../services/api';
+import { aiAPI, musicAPI, searchAPI } from '../../services/api';
 import SongCard from '../music/SongCard';
-import type { Song, AIRecommendation } from '../../types';
+import type { Song, AIRecommendation, SearchResult } from '../../types';
 
 export function HomePage() {
   const { user } = useAuthStore();
@@ -28,6 +28,32 @@ export function HomePage() {
     setLoadingRec(true);
     aiAPI.getRecommendations().then(({ data }) => setRecommendations(data.recommendations)).catch(() => {}).finally(() => setLoadingRec(false));
   }, []);
+
+  const handleRecommendationClick = async (query: string) => {
+    try {
+      const { data } = await searchAPI.searchAll(query);
+      const songs: Song[] = [...data.youtube, ...data.spotify, ...data.deezer]
+        .filter(r => r.title && r.artist)
+        .map(r => ({
+          id: r.youtubeId || r.spotifyId || r.deezerId || `rec-${Math.random()}`,
+          title: r.title || '',
+          artist: r.artist || '',
+          album: r.album || 'Unknown Album',
+          duration: r.duration || 0,
+          source: r.source,
+          youtubeId: r.youtubeId,
+          spotifyId: r.spotifyId,
+          deezerId: r.deezerId,
+          coverArt: r.thumbnailUrl || '',
+          previewUrl: r.previewUrl,
+        } as Song));
+      if (songs.length > 0) {
+        loadQueue(songs.slice(0, 10), 0);
+      }
+    } catch (err) {
+      console.error('Search failed:', err);
+    }
+  };
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
   const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -70,6 +96,8 @@ export function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
                   whileHover={{ scale: 1.02, translateY: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleRecommendationClick(rec.query)}
                   className="glass rounded-xl p-4 cursor-pointer group"
                 >
                   <p className="text-sm font-semibold text-white/85 truncate mb-1">{rec.query}</p>

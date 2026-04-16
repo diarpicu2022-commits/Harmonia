@@ -90,25 +90,27 @@ interface PlayerStore extends PlayerState {
   isLiked: (songId: string) => boolean;
 }
 
-export const usePlayerStore = create<PlayerStore>()((set, get) => {
-  const playlist = new DoublyLinkedListClient<Song>();
+export const usePlayerStore = create<PlayerStore>()(
+  persist(
+    (set, get) => {
+      const playlist = new DoublyLinkedListClient<Song>();
 
-  return {
-    playlist,
-    currentSong: null,
-    isPlaying: false,
-    volume: 0.8,
-    progress: 0,
-    duration: 0,
-    isMuted: false,
-    isShuffled: false,
-    repeatMode: 'none',
-    currentQueue: [],
-    currentIndex: -1,
-    showQueue: false,
-    showLyrics: false,
-    isFullscreen: false,
-    likedSongs: [],
+      return {
+        playlist,
+        currentSong: null,
+        isPlaying: false,
+        volume: 0.8,
+        progress: 0,
+        duration: 0,
+        isMuted: false,
+        isShuffled: false,
+        repeatMode: 'none',
+        currentQueue: [],
+        currentIndex: -1,
+        showQueue: false,
+        showLyrics: false,
+        isFullscreen: false,
+        likedSongs: [],
 
     toggleLike: (songId) => set(s => {
       const currentSong = s.currentSong;
@@ -220,7 +222,10 @@ toggleFullscreen: () => {
       set(s => ({ isFullscreen: !s.isFullscreen }));
     },
   };
-});
+},
+    { name: 'harmonia-player' }
+  )
+);
 
 // ─── AI Chat Store ────────────────────────────────────────────────────────────
 
