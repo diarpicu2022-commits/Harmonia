@@ -155,21 +155,36 @@ export default function ExpandedPlayer() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
       style={{ background: 'linear-gradient(180deg, var(--mood-surface) 0%, #080810 60%, #080810 100%)' }}>
       
-      <button onClick={toggleFullscreen} className="absolute top-6 right-6 p-3 rounded-full bg-white/10 text-white/60 hover:text-white transition-colors z-10">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 blur-3xl" style={{ background: 'var(--mood-primary)', animation: 'pulse 4s ease-in-out infinite' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-15 blur-3xl" style={{ background: 'var(--mood-glow)', animation: 'pulse 4s ease-in-out infinite 2s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full opacity-5" 
+          style={{ border: '1px solid var(--mood-primary)', animation: 'spin 20s linear infinite' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-5"
+          style={{ border: '1px solid var(--mood-primary)', animation: 'spin 15s linear infinite reverse' }} />
+      </div>
+
+      <button onClick={toggleFullscreen} className="absolute top-6 right-6 p-3 rounded-full bg-white/10 text-white/60 hover:text-white transition-colors z-10 hover:bg-white/20">
         <Minimize2 size={24} />
       </button>
 
       <div className="flex flex-col items-center max-w-2xl w-full px-8">
-        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1 }}
+        <motion.div initial={{ scale: 0.9, opacity: 0, rotate: -5 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
           className={`${showVideo && isYouTube ? 'w-full aspect-video' : 'w-72 h-72'} rounded-2xl overflow-hidden shadow-2xl mb-6 relative`}
-          style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 100px var(--mood-glow)' }}>
+          style={{ 
+            boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 100px var(--mood-glow)',
+            transform: 'perspective(1000px) rotateY(-5deg)'
+          }}>
           {showVideo && isYouTube ? (
             <div ref={playerContainerRef} className="w-full h-full rounded-2xl" />
           ) : currentSong.coverArt ? (
-            <img src={currentSong.coverArt} alt="" className="w-full h-full object-cover" />
+            <div className="w-full h-full relative group">
+              <img src={currentSong.coverArt} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--mood-surface)' }}>
               <Volume2 size={64} style={{ color: 'var(--mood-primary)', opacity: 0.4 }} />
@@ -178,7 +193,7 @@ export default function ExpandedPlayer() {
           {isYouTube && !showVideo && (
             <button onClick={loadVideo}
               className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-              <div className="p-4 rounded-full bg-red-500 text-white">
+              <div className="p-4 rounded-full bg-red-500 text-white hover:scale-110 transition-transform">
                 <Youtube size={32} />
               </div>
             </button>
@@ -211,26 +226,30 @@ export default function ExpandedPlayer() {
         </motion.div>
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
-          className="flex items-center justify-center gap-6 mb-8">
-          <button onClick={handleShuffle} className={`p-3 rounded-full transition-colors ${isShuffled ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+          className="flex items-center justify-center gap-4 mb-8">
+          <button onClick={handleShuffle} 
+            className={`p-3 rounded-full transition-all duration-300 hover:bg-white/10 hover:scale-110 ${isShuffled ? 'text-white' : 'text-white/30 hover:text-white'}`}>
             <Shuffle size={22} />
           </button>
           
-          <button onClick={prevSong} className="p-3 text-white/60 hover:text-white transition-colors">
+          <button onClick={prevSong} 
+            className="p-3 text-white/60 hover:text-white transition-all duration-300 hover:bg-white/10 hover:scale-110 rounded-full">
             <SkipBack size={28} fill="currentColor" />
           </button>
           
           <button onClick={togglePlay} 
-            className="p-5 rounded-full text-white transition-transform hover:scale-105"
-            style={{ background: 'var(--mood-primary)' }}>
-            {isPlaying ? <Pause size={32} fill="white" /> : <Play size={32} fill="white" />}
+            className="p-6 rounded-full text-white transition-all duration-300 hover:scale-110 hover:shadow-lg"
+            style={{ background: 'var(--mood-primary)', boxShadow: '0 0 30px var(--mood-glow)' }}>
+            {isPlaying ? <Pause size={36} fill="white" /> : <Play size={36} fill="white" />}
           </button>
           
-          <button onClick={nextSong} className="p-3 text-white/60 hover:text-white transition-colors">
+          <button onClick={nextSong} 
+            className="p-3 text-white/60 hover:text-white transition-all duration-300 hover:bg-white/10 hover:scale-110 rounded-full">
             <SkipForward size={28} fill="currentColor" />
           </button>
           
-          <button onClick={handleRepeat} className={`p-3 rounded-full transition-colors ${repeatMode !== 'none' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+          <button onClick={handleRepeat} 
+            className={`p-3 rounded-full transition-all duration-300 hover:bg-white/10 hover:scale-110 ${repeatMode !== 'none' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
             <Repeat size={22} />
           </button>
 
@@ -267,26 +286,32 @@ export default function ExpandedPlayer() {
         </motion.div>
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
-          className="flex items-center justify-center gap-4 text-white/40">
+          className="flex items-center justify-center gap-3">
           {hasVideo && !showVideo && (
             <button onClick={loadVideo}
-              className="p-2 hover:text-red-500 transition-colors" title="Ver video">
+              className="p-3 rounded-full hover:bg-white/10 hover:text-red-500 transition-all duration-300" title="Ver video">
               <Youtube size={20} />
             </button>
           )}
           {hasVideo && showVideo && (
             <button onClick={() => setShowVideo(false)}
-              className="p-2 hover:text-red-500 transition-colors" title="Ver carátula">
+              className="p-3 rounded-full hover:bg-white/10 hover:text-red-500 transition-all duration-300" title="Ver carátula">
               <Maximize2 size={20} />
             </button>
           )}
-          <button onClick={handleLike} className={`p-2 transition-colors ${isCurrentSongLiked ? 'text-red-500' : 'hover:text-white'}`} title="Me gusta">
+          <button onClick={handleLike} 
+            className={`p-3 rounded-full transition-all duration-300 hover:bg-white/10 ${isCurrentSongLiked ? 'text-red-500' : 'text-white/40 hover:text-white'}`} 
+            title="Me gusta">
             <Heart size={20} fill={isCurrentSongLiked ? 'currentColor' : 'none'} />
           </button>
-          <button onClick={handleQueue} className="p-2 hover:text-white transition-colors" title="Cola">
+          <button onClick={handleQueue} 
+            className="p-3 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-all duration-300" 
+            title="Cola">
             <ListMusic size={20} />
           </button>
-          <button onClick={handleLyrics} className="p-2 hover:text-white transition-colors" title="Letras">
+          <button onClick={handleLyrics} 
+            className="p-3 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-all duration-300" 
+            title="Letras">
             <Mic2 size={20} />
           </button>
         </motion.div>
