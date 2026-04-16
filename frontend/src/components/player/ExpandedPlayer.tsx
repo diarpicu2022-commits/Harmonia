@@ -75,7 +75,7 @@ export default function ExpandedPlayer() {
             <iframe
               id="yt-embed-player"
               className="w-full h-full rounded-2xl"
-              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1&start=${currentTimeSeconds}`}
+              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1&start=${currentTimeSeconds}&mute=1`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
