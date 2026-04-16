@@ -35,9 +35,14 @@ export default function ExpandedPlayer() {
 
   const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
+  const currentTimeSeconds = Math.floor(progress * (duration || 0));
 
   const loadVideo = () => {
     setShowVideo(true);
+  };
+
+  const closeVideo = () => {
+    setShowVideo(false);
   };
 
   if (!currentSong) {
@@ -70,7 +75,7 @@ export default function ExpandedPlayer() {
             <iframe
               id="yt-embed-player"
               className="w-full h-full rounded-2xl"
-              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1`}
+              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1&start=${currentTimeSeconds}`}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
