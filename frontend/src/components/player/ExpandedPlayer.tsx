@@ -10,6 +10,12 @@ export default function ExpandedPlayer() {
   const [showVideo, setShowVideo] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
 
+  const handleShuffle = () => { console.log('toggleShuffle clicked'); toggleShuffle(); };
+  const handleRepeat = () => { console.log('cycleRepeat clicked'); cycleRepeat(); };
+  const handleQueue = () => { console.log('toggleQueue clicked'); toggleQueue(); };
+  const handleLyrics = () => { console.log('toggleLyrics clicked'); toggleLyrics(); };
+  const handleLike = () => { console.log('like clicked'); };
+
   useEffect(() => {
     if (currentSong?.source === 'youtube' && currentSong.youtubeId) {
       let container = document.getElementById('yt-player-container');
@@ -134,7 +140,7 @@ export default function ExpandedPlayer() {
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
           className="flex items-center justify-center gap-6 mb-8">
-          <button onClick={toggleShuffle} className={`p-3 rounded-full transition-colors ${isShuffled ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+          <button onClick={handleShuffle} className={`p-3 rounded-full transition-colors ${isShuffled ? 'text-white' : 'text-white/30 hover:text-white'}`}>
             <Shuffle size={22} />
           </button>
           
@@ -152,7 +158,7 @@ export default function ExpandedPlayer() {
             <SkipForward size={28} fill="currentColor" />
           </button>
           
-          <button onClick={cycleRepeat} className={`p-3 rounded-full transition-colors ${repeatMode !== 'none' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
+          <button onClick={handleRepeat} className={`p-3 rounded-full transition-colors ${repeatMode !== 'none' ? 'text-white' : 'text-white/30 hover:text-white'}`}>
             <Repeat size={22} />
           </button>
         </motion.div>
@@ -171,13 +177,13 @@ export default function ExpandedPlayer() {
               <Maximize2 size={20} />
             </button>
           )}
-          <button className="p-2 hover:text-white transition-colors" title="Me gusta">
+          <button onClick={handleLike} className="p-2 hover:text-white transition-colors" title="Me gusta">
             <Heart size={20} />
           </button>
-          <button onClick={toggleQueue} className="p-2 hover:text-white transition-colors" title="Cola">
+          <button onClick={handleQueue} className="p-2 hover:text-white transition-colors" title="Cola">
             <ListMusic size={20} />
           </button>
-          <button onClick={toggleLyrics} className="p-2 hover:text-white transition-colors" title="Letras">
+          <button onClick={handleLyrics} className="p-2 hover:text-white transition-colors" title="Letras">
             <Mic2 size={20} />
           </button>
         </motion.div>
