@@ -37,6 +37,12 @@ export default function ExpandedPlayer() {
     }
   }, [seekTo, showVideo, isYouTube]);
 
+  useEffect(() => {
+    if (!isPlaying && showVideo && isYouTube) {
+      setShowVideo(false);
+    }
+  }, [isPlaying, showVideo, isYouTube]);
+
   const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
   const currentTimeSeconds = Math.floor(progress * (duration || 0));
