@@ -30,8 +30,9 @@ export default function ExpandedPlayer() {
         container.style.display = 'none';
         document.body.appendChild(container);
       }
+      setVideoKey(k => k + 1);
     }
-  }, [currentSong]);
+  }, [currentSong?.youtubeId]);
 
   const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
@@ -48,12 +49,6 @@ export default function ExpandedPlayer() {
     const rect = e.currentTarget.getBoundingClientRect();
     seekTo((e.clientX - rect.left) / rect.width);
   }, [seekTo]);
-
-  useEffect(() => {
-    if (!isPlaying && showVideo && isYouTube) {
-      setShowVideo(false);
-    }
-  }, [isPlaying, showVideo, isYouTube]);
 
   useEffect(() => {
     if (currentSong && !isYouTube && showVideo) {
