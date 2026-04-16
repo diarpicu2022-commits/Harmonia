@@ -21,11 +21,6 @@ export default function ExpandedPlayer() {
     }
   }, [currentSong]);
 
-  useEffect(() => {
-    if (showVideo && isYouTube) {
-    }
-  }, [showVideo, isYouTube]);
-
   const formatTime = (s: number) => {
     if (!s) return '0:00';
     const mins = Math.floor(s / 60);
