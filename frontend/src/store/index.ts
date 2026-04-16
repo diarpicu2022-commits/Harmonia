@@ -198,7 +198,10 @@ export const usePlayerStore = create<PlayerStore>()((set, get) => {
 
     toggleQueue: () => set(s => ({ showQueue: !s.showQueue })),
     toggleLyrics: () => set(s => ({ showLyrics: !s.showLyrics })),
-    toggleFullscreen: () => set(s => ({ isFullscreen: !s.isFullscreen })),
+toggleFullscreen: () => {
+      sessionStorage.setItem('fullscreen-toggling', 'true');
+      set(s => ({ isFullscreen: !s.isFullscreen }));
+    },
   };
 });
 

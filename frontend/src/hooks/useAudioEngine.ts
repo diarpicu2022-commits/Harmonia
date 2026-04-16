@@ -25,8 +25,6 @@ export const useAudioEngine = () => {
   const playStartRef = useRef<number>(0);
   const songRef = useRef(currentSong);
   songRef.current = currentSong;
-  const lastFullscreenRef = useRef(isFullscreen);
-  lastFullscreenRef.current = isFullscreen;
 
   const stopCurrent = useCallback(() => {
     if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
@@ -46,12 +44,13 @@ export const useAudioEngine = () => {
   // ─── Load & play song ──────────────────────────────────────────────────────
 
   useEffect(() => {
-    // Skip if fullscreen just toggled (same song, don't reload)
-    const fullscreenChanged = lastFullscreenRef.current !== isFullscreen;
-    lastFullscreenRef.current = isFullscreen;
-    
     if (!currentSong) return;
-    if (fullscreenChanged && songRef.current?.id === currentSong.id) return;
+    
+    const wasToggling = sessionStorage.getItem('fullscreen-toggling');
+    if (wasToggling === 'true') {
+      sessionStorage.removeItem('fullscreen-toggling');
+      return;
+    }
     stopCurrent();
     setProgress(0);
     playStartRef.current = Date.now();

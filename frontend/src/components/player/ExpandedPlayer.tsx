@@ -8,6 +8,7 @@ export default function ExpandedPlayer() {
   const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics } = usePlayerStore();
   const { seekTo } = useAudioEngine();
   const [showVideo, setShowVideo] = useState(false);
+  const [videoKey, setVideoKey] = useState(0);
 
   useEffect(() => {
     if (currentSong?.source === 'youtube' && currentSong.youtubeId) {
@@ -31,7 +32,10 @@ export default function ExpandedPlayer() {
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     seekTo((e.clientX - rect.left) / rect.width);
-  }, [seekTo]);
+    if (showVideo && isYouTube) {
+      setVideoKey(k => k + 1);
+    }
+  }, [seekTo, showVideo, isYouTube]);
 
   const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
@@ -73,6 +77,7 @@ export default function ExpandedPlayer() {
           style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 100px var(--mood-glow)' }}>
           {showVideo && isYouTube ? (
             <iframe
+              key={videoKey}
               id="yt-embed-player"
               className="w-full h-full rounded-2xl"
               src={`https://www.youtube.com/embed/${currentSong.youtubeId}?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1&start=${currentTimeSeconds}&mute=1`}
