@@ -213,11 +213,24 @@ export default function ExpandedPlayer() {
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}
           className="w-full mb-8">
-          <div className="relative h-2 bg-white/10 rounded-full mb-3 cursor-pointer group" onClick={handleSeek}>
-            <motion.div className="absolute h-full rounded-full"
-              style={{ width: `${(progress / (duration || 1)) * 100}%`, background: 'var(--mood-primary)' }} />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2"
-              style={{ boxShadow: '0 0 8px var(--mood-glow)' }} />
+          <div className="relative h-2 rounded-full mb-3 cursor-pointer group" 
+            style={{ background: 'rgba(255,255,255,0.1)' }} onClick={handleSeek}>
+            <motion.div 
+              className="absolute h-full rounded-full"
+              style={{ 
+                width: `${(progress / (duration || 1)) * 100}%`, 
+                background: 'var(--mood-primary)',
+                boxShadow: '0 0 10px var(--mood-glow)'
+              }} 
+            />
+            <motion.div 
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ 
+                left: `${(progress / (duration || 1)) * 100}%`,
+                boxShadow: '0 0 10px var(--mood-glow)',
+                transform: 'translate(-50%, -50%)'
+              }} 
+            />
           </div>
           <div className="flex justify-between text-sm text-white/40">
             <span>{formatTime(progress * (duration || 0))}</span>
