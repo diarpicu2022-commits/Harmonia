@@ -60,29 +60,31 @@ export default function SearchPage() {
       {/* Search bar */}
       <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
         onSubmit={handleSearch} className="mb-8">
-        <div className="relative max-w-2xl">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
-          <input
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Busca canciones, artistas, álbumes..."
-            className="w-full pl-12 pr-32 py-4 rounded-2xl text-white/85 text-sm outline-none transition-all"
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              fontFamily: "'Plus Jakarta Sans',sans-serif",
-            }}
-            onFocus={e => {
-              e.currentTarget.style.borderColor = 'var(--mood-primary)';
-              e.currentTarget.style.boxShadow = '0 0 0 3px var(--mood-glow)';
-            }}
-            onBlur={e => {
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          />
+        <div className="flex items-center gap-3 max-w-2xl">
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Busca canciones, artistas, álbumes..."
+              className="w-full pl-12 pr-4 py-4 rounded-2xl text-white/85 text-sm outline-none transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                fontFamily: "'Plus Jakarta Sans',sans-serif",
+              }}
+              onFocus={e => {
+                e.currentTarget.style.borderColor = 'var(--mood-primary)';
+                e.currentTarget.style.boxShadow = '0 0 0 3px var(--mood-glow)';
+              }}
+              onBlur={e => {
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            />
+          </div>
           <button type="submit" disabled={loading}
-            className="absolute right-3 top-1/2 -translate-y-1/2 px-5 py-2 rounded-xl text-sm font-medium btn-mood disabled:opacity-50">
+            className="px-6 py-4 rounded-2xl text-sm font-medium btn-mood disabled:opacity-50 whitespace-nowrap">
             {loading ? '...' : 'Buscar'}
           </button>
         </div>
