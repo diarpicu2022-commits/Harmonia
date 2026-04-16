@@ -1,24 +1,30 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2, Youtube, ExternalLink } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, ListMusic, Mic2, Minimize2, Youtube, Maximize2 } from 'lucide-react';
 import { usePlayerStore } from '../../store';
 import { useAudioEngine } from '../../hooks/useAudioEngine';
 
 export default function ExpandedPlayer() {
   const { currentSong, isPlaying, togglePlay, nextSong, prevSong, progress, duration, volume, toggleFullscreen, toggleMute, isMuted, repeatMode, cycleRepeat, isShuffled, toggleShuffle, toggleQueue, toggleLyrics } = usePlayerStore();
   const { seekTo } = useAudioEngine();
+  const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     if (currentSong?.source === 'youtube' && currentSong.youtubeId) {
-      const container = document.getElementById('yt-player-container');
+      let container = document.getElementById('yt-player-container');
       if (!container) {
-        const div = document.createElement('div');
-        div.id = 'yt-player-container';
-        div.style.display = 'none';
-        document.body.appendChild(div);
+        container = document.createElement('div');
+        container.id = 'yt-player-container';
+        container.style.display = 'none';
+        document.body.appendChild(container);
       }
     }
   }, [currentSong]);
+
+  useEffect(() => {
+    if (showVideo && isYouTube) {
+    }
+  }, [showVideo, isYouTube]);
 
   const formatTime = (s: number) => {
     if (!s) return '0:00';
@@ -34,6 +40,10 @@ export default function ExpandedPlayer() {
 
   const isYouTube = currentSong?.source === 'youtube' && currentSong.youtubeId;
   const hasVideo = isYouTube;
+
+  const loadVideo = () => {
+    setShowVideo(true);
+  };
 
   if (!currentSong) {
     return (
@@ -57,16 +67,32 @@ export default function ExpandedPlayer() {
         <Minimize2 size={24} />
       </button>
 
-      <div className="flex flex-col items-center max-w-lg w-full px-8">
+      <div className="flex flex-col items-center max-w-2xl w-full px-8">
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1 }}
-          className="w-72 h-72 rounded-2xl overflow-hidden shadow-2xl mb-10"
+          className={`${showVideo && isYouTube ? 'w-full aspect-video' : 'w-72 h-72'} rounded-2xl overflow-hidden shadow-2xl mb-6 relative`}
           style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 100px var(--mood-glow)' }}>
-          {currentSong.coverArt ? (
+          {showVideo && isYouTube ? (
+            <iframe
+              id="yt-embed-player"
+              className="w-full h-full rounded-2xl"
+              src={`https://www.youtube.com/embed/${currentSong.youtubeId}?autoplay=1&controls=1&rel=0&showinfo=0&modestbranding=1`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : currentSong.coverArt ? (
             <img src={currentSong.coverArt} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--mood-surface)' }}>
               <Volume2 size={64} style={{ color: 'var(--mood-primary)', opacity: 0.4 }} />
             </div>
+          )}
+          {isYouTube && !showVideo && (
+            <button onClick={loadVideo}
+              className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+              <div className="p-4 rounded-full bg-red-500 text-white">
+                <Youtube size={32} />
+              </div>
+            </button>
           )}
         </motion.div>
 
@@ -122,10 +148,16 @@ export default function ExpandedPlayer() {
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}
           className="flex items-center justify-center gap-4 text-white/40">
-          {hasVideo && (
-            <button onClick={() => window.open(`https://www.youtube.com/watch?v=${currentSong.youtubeId}`, '_blank')}
+          {hasVideo && !showVideo && (
+            <button onClick={loadVideo}
               className="p-2 hover:text-red-500 transition-colors" title="Ver video">
               <Youtube size={20} />
+            </button>
+          )}
+          {hasVideo && showVideo && (
+            <button onClick={() => setShowVideo(false)}
+              className="p-2 hover:text-red-500 transition-colors" title="Ver carátula">
+              <Maximize2 size={20} />
             </button>
           )}
           <button className="p-2 hover:text-white transition-colors" title="Me gusta">
